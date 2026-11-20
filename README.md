@@ -55,7 +55,7 @@ adb install -r app/build/outputs/apk/release/app-release.apk
 
 Release builds are signed with a key kept outside the repo (`~/.plexverse-release`, see
 `app/build.gradle.kts`); without it they fall back to the debug key. `tools/release.sh` publishes a
-signed build as a GitHub release of `molnarroland/PlexVerse`, which release builds offer to install.
+signed build as a GitHub release.
 
 ## The core
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
-# release.sh: builds PlexVerse with the release key and publishes it as a GitHub release, which the app's
-# update check offers on the TV. Run it from a clean, pushed main.
+# release.sh: builds PlexVerse with the release key and publishes it as a GitHub release. Run it from
+# a clean, pushed main.
 #
 # Needs: the release key in ~/.plexverse-release (see app/build.gradle.kts), JDK 17+, the Android SDK, gh.
 #

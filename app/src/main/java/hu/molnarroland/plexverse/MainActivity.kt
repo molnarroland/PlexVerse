@@ -1,6 +1,7 @@
 package hu.molnarroland.plexverse
 
 import android.accessibilityservice.AccessibilityServiceInfo
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.drawable.ColorDrawable
@@ -52,46 +53,46 @@ import com.embergabor.simplex.core.player.PlayerActivity
 import com.embergabor.simplex.core.plex.PlexClient
 import com.embergabor.simplex.core.ui.AppTheme
 import com.embergabor.simplex.core.ui.Palette
+import hu.molnarroland.plexverse.data.Copy
+import hu.molnarroland.plexverse.data.ServerState
+import hu.molnarroland.plexverse.data.SetupPrefs
+import hu.molnarroland.plexverse.data.VerseStore
+import hu.molnarroland.plexverse.feature.category.CategoryScreen
+import hu.molnarroland.plexverse.feature.folder.FolderScreen
+import hu.molnarroland.plexverse.feature.home.HomeScreen
+import hu.molnarroland.plexverse.feature.kids.KidsGate
+import hu.molnarroland.plexverse.feature.kids.KidsHome
+import hu.molnarroland.plexverse.feature.kids.KidsSettingsScreen
+import hu.molnarroland.plexverse.feature.kids.forKids
+import hu.molnarroland.plexverse.feature.search.SearchScreen
+import hu.molnarroland.plexverse.feature.settings.SettingsScreen
+import hu.molnarroland.plexverse.feature.setup.ManageCategoriesScreen
+import hu.molnarroland.plexverse.feature.setup.SetupScreen
+import hu.molnarroland.plexverse.feature.show.ShowScreen
+import hu.molnarroland.plexverse.feature.start.ProfilePicker
+import hu.molnarroland.plexverse.feature.start.SignInScreen
+import hu.molnarroland.plexverse.feature.start.Splash
 import hu.molnarroland.plexverse.profile.ProfileStore
 import hu.molnarroland.plexverse.profile.Startup
 import hu.molnarroland.plexverse.ui.Backdrop
 import hu.molnarroland.plexverse.ui.Backdrops
-import hu.molnarroland.plexverse.ui.CategoryScreen
-import hu.molnarroland.plexverse.ui.Copy
-import hu.molnarroland.plexverse.ui.FolderScreen
-import hu.molnarroland.plexverse.ui.FollowTheme
-import hu.molnarroland.plexverse.ui.HomeScreen
-import hu.molnarroland.plexverse.ui.KidsGate
-import hu.molnarroland.plexverse.ui.KidsHome
-import hu.molnarroland.plexverse.ui.KidsSettingsScreen
 import hu.molnarroland.plexverse.ui.LocalRefresh
 import hu.molnarroland.plexverse.ui.LocalRefreshBump
 import hu.molnarroland.plexverse.ui.LocalScreenBackdrop
-import hu.molnarroland.plexverse.ui.ManageCategoriesScreen
 import hu.molnarroland.plexverse.ui.Message
 import hu.molnarroland.plexverse.ui.Nav
 import hu.molnarroland.plexverse.ui.PivotScroll
-import hu.molnarroland.plexverse.ui.ProfilePicker
 import hu.molnarroland.plexverse.ui.RemoteKeys
 import hu.molnarroland.plexverse.ui.Screen
-import hu.molnarroland.plexverse.ui.SearchScreen
-import hu.molnarroland.plexverse.ui.ServerState
-import hu.molnarroland.plexverse.ui.SettingsScreen
-import hu.molnarroland.plexverse.ui.SetupPrefs
-import hu.molnarroland.plexverse.ui.SetupScreen
-import hu.molnarroland.plexverse.ui.ShowScreen
-import hu.molnarroland.plexverse.ui.SignInScreen
-import hu.molnarroland.plexverse.ui.Splash
-import hu.molnarroland.plexverse.ui.VerseStore
 import hu.molnarroland.plexverse.ui.VoiceSearch
-import hu.molnarroland.plexverse.ui.applyTheme
-import hu.molnarroland.plexverse.ui.forKids
 import hu.molnarroland.plexverse.ui.splashDone
+import hu.molnarroland.plexverse.ui.theme.FollowTheme
+import hu.molnarroland.plexverse.ui.theme.applyTheme
+import kotlin.coroutines.resume
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withTimeoutOrNull
-import kotlin.coroutines.resume
 
 /** Where the app is: signing in, picking who's watching, the grown-ups' app, or Kids mode. */
 private enum class Phase { SignIn, Picker, Main, Kids }
@@ -179,6 +180,8 @@ class MainActivity : ComponentActivity() {
     // The mic arrives as the search key on most remotes; Android asks for a search with it.
     override fun onSearchRequested() = listen()
 
+    // A false alarm: overriding Activity.dispatchKeyEvent is public API; only ComponentActivity's copy is marked.
+    @SuppressLint("RestrictedApi")
     override fun dispatchKeyEvent(event: KeyEvent): Boolean {
         if (event.keyCode == KeyEvent.KEYCODE_VOICE_ASSIST || event.keyCode == KeyEvent.KEYCODE_SEARCH) {
             if (event.action == KeyEvent.ACTION_UP && listen()) return true

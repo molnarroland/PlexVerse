@@ -2,12 +2,12 @@ package hu.molnarroland.plexverse.profile
 
 import android.content.Context
 import com.embergabor.simplex.core.plex.PlexClient
+import java.net.URLEncoder
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONArray
 import org.json.JSONObject
-import java.net.URLEncoder
 
 /**
  * Someone who watches: a Plex Home user, whose watched state, restrictions and PIN live on Plex, or the

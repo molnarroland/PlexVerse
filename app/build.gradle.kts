@@ -5,6 +5,7 @@ plugins {
     id("org.jetbrains.kotlin.plugin.compose")
     // Ships a compiled profile in the APK, so focus moves are fast from the first start. See baselineprofile/.
     id("androidx.baselineprofile")
+    id("com.android.compose.screenshot")
 }
 
 // The release key lives outside the repo (~/.plexverse-release, backed up by its owner). Without it,
@@ -53,7 +54,6 @@ android {
 
     buildFeatures {
         compose = true
-        buildConfig = true
     }
 
     compileOptions {
@@ -64,6 +64,8 @@ android {
     lint {
         checkReleaseBuilds = false
     }
+
+    experimentalProperties["android.experimental.enableScreenshotTest"] = true
 
     testOptions {
         unitTests.isReturnDefaultValues = true
@@ -78,6 +80,12 @@ dependencies {
     implementation("androidx.core:core-splashscreen:1.0.1")
     // The QR code on the sign-in screen.
     implementation("com.google.zxing:core:3.5.3")
+    // @Preview for every screen (see ui/preview), with the Compose version simplex-core brings.
+    implementation(platform("androidx.compose:compose-bom:2026.09.00"))
+    implementation("androidx.compose.ui:ui-tooling-preview")
+    debugImplementation("androidx.compose.ui:ui-tooling")
+    screenshotTestImplementation("com.android.tools.screenshot:screenshot-validation-api:0.0.1-alpha16")
+    screenshotTestImplementation("androidx.compose.ui:ui-tooling")
     implementation("androidx.profileinstaller:profileinstaller:1.4.1")
     baselineProfile(project(":baselineprofile"))
 

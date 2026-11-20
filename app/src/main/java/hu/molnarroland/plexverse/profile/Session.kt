@@ -2,8 +2,8 @@ package hu.molnarroland.plexverse.profile
 
 import android.content.Context
 import com.embergabor.simplex.core.plex.PlexClient
-import hu.molnarroland.plexverse.ui.SetupPrefs
-import hu.molnarroland.plexverse.ui.VerseStore
+import hu.molnarroland.plexverse.data.SetupPrefs
+import hu.molnarroland.plexverse.data.VerseStore
 
 /**
  * Signing in and switching between profiles. simplex-core's [PlexClient] holds one account token and
