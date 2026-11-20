@@ -1,8 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Same grey as the app's background, so opening the app doesn't flash white. -->
-    <style name="Theme.Simplex" parent="@android:style/Theme.Material.Light.NoActionBar">
+    <!-- The night sky's ground, so opening the app doesn't flash; the app sets the day one when it's day. -->
+    <style name="Theme.PlexVerse" parent="@android:style/Theme.Material.NoActionBar">
         <item name="android:windowBackground">@color/ground</item>
     </style>
-    <color name="ground">#BEBEC3</color>
+
+    <!-- The system splash: the still mark on the night sky, where the app's animated splash takes over. -->
+    <style name="Theme.PlexVerse.Starting" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/ground</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/splash_mark</item>
+        <item name="postSplashScreenTheme">@style/Theme.PlexVerse</item>
+    </style>
+
+    <color name="ground">#0B0814</color>
 </resources>

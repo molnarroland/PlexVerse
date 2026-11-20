@@ -1,5 +1,29 @@
 # TODO
 
+## The rethink, built (2026-11-20), to check on the TV
+
+Not tried with a real account yet: only start-up, the splash, the night and day skies and the sign-in
+screen (with a live plex.tv code and its QR) were run, on a phone emulator.
+
+- Sign-in → Who's watching (Plex Home) → first-run Servers & categories → Home. Switching profiles with a
+  PIN; a managed user's servers and Continue watching are their own.
+- Hold Back: 1 s on Home switches profile; 3 s in Kids mode opens the grown-ups' gate. Check the remote
+  sends repeats for a held Back.
+- Kids: the age ceiling (Plex's contentRating, read from the library lists), the episode limit, the mic
+  narrowing the posters.
+- Theme Auto from the IP address, a place set by hand, the switch waiting while a video plays.
+
+## Not built: needs simplex-core
+
+- **Lag prompt during playback** ("Lagging on NAS. Continue on Office, same Hungarian audio?"). The player
+  is simplex-core's `PlayerActivity`, which reports nothing back (rebuffers, download rate, first frame)
+  and can't be extended. Needs a hook in the core: a playback-stats callback or broadcast, and a way to
+  hand it a new source at the current position. Servers are already ranked by their measured answer time.
+- **The local Kids profile's own progress.** It shares the account's token, and the player reports
+  progress itself; making it not report needs a player option in the core.
+- **The system splash in day colours.** Android 12's splash is drawn from the manifest theme before the
+  app runs, so it's always the night one; the app's own splash follows the theme.
+
 ## Built, to check on the TV (2026-10-31)
 
 Player:

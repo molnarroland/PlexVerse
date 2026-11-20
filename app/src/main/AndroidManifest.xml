@@ -9,13 +9,13 @@
     <uses-feature android:name="android.hardware.touchscreen" android:required="false" />
 
     <application
-        android:name=".SimplexApp"
+        android:name=".PlexVerseApp"
         android:label="PlexVerse"
         android:icon="@drawable/icon"
         android:banner="@drawable/banner"
         android:usesCleartextTraffic="true"
         android:largeHeap="true"
-        android:theme="@style/Theme.Simplex">
+        android:theme="@style/Theme.PlexVerse">
 
         <!-- Lets simpleperf and Perfetto look inside the release build on the TV; nothing else changes. -->
         <profileable android:shell="true" />
@@ -23,6 +23,7 @@
         <activity
             android:name=".MainActivity"
             android:exported="true"
+            android:theme="@style/Theme.PlexVerse.Starting"
             android:screenOrientation="landscape">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

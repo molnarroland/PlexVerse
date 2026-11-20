@@ -8,7 +8,7 @@ plugins {
 }
 
 android {
-    namespace = "com.ember.simpleplex.baselineprofile"
+    namespace = "hu.molnarroland.plexverse.baselineprofile"
     compileSdk = 37
 
     defaultConfig {

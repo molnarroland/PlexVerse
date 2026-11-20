@@ -1,61 +1,47 @@
 # PlexVerse
 
-Simplex with every server at once: PlexVerse merges all the Plex servers your account reaches into one
-set of libraries, and adds Kids, a separate place for children's libraries. It started as the `plexverse`
-branch of [Simplex](https://github.com/embergabor/simplex) and installs next to it (`com.ember.plexverse`).
+Every Plex server your account reaches, as one set of libraries, on Android TV. PlexVerse merges the
+movies and shows of all of them, plays each title from the best server that has it, and gives every
+person in the house their own profile, with a Kids mode a child can't wander out of.
 
-A deliberately simple Android TV client for an existing Plex Media Server. It shows your movies, TV shows
-and "other videos" libraries and plays the files as they are. It has no recommendations, descriptions,
-cast or reviews.
-
-Built for a Sony Bravia (Google TV) sending audio over eARC to an AV receiver, but it should run on any
-Android TV 8.0+.
+A deliberately simple client: no recommendations, descriptions, cast or reviews. Built for a Sony Bravia
+(Google TV) sending audio over eARC to an AV receiver, but it should run on any Android TV 8.0+.
+Package: `hu.molnarroland.plexverse`.
 
 ## What it does
 
-- **Home:** Continue watching (the one place OK resumes) and your video libraries as tiles, under a
-  menu with Search, Home, PlexVerse, Kids and Settings. The focused title's artwork fills the background,
-  blurred. Music and photo libraries are left out.
-- **Libraries:** a grid of 2:3 posters, A–Z (with a letter rail on the right to jump), by date added or by
-  year. Show posters count their unwatched episodes. "Other videos" libraries are browsed by folder.
+- **Start:** the mark (a planet with a play symbol, three servers in its orbit) on the night sky while the
+  servers answer. Sign in once with a plex.tv/link code, or scan the QR code with a phone.
+- **Who's watching?** The profiles are Plex Home's users, so watched state, progress, restrictions and
+  PINs come from Plex. Picking one switches to that person's token on every server. Start-up either asks
+  or starts as the last person; holding Back on Home switches. Without Plex Home there's one profile, plus
+  an optional local Kids profile.
+- **Home:** Continue watching across every server, then what's new in Movies and Series (and the pinned
+  category). The main menu: Search, Home, Movies, Series, one pinned category, Others (a popup with the
+  rest and Manage categories), Settings.
+- **Servers & categories:** two steps, with "Looks right" on both. Servers are ranked for you: yours before
+  shared, on this network before remote, faster first (Move overrides it). Movies and Series fill
+  themselves from every movie and show library; your own categories (Documentaries, Anime…) sit under
+  Others, one of them pinned to the menu. OK on a library moves it to a category or Hidden.
+- **Grids:** A–Z (with a letter rail), Recently added, Year or Unwatched first, remembered per category and
+  per profile. A title on several servers shows once (×N), plays from the highest-ranked server that
+  answers, and its progress goes to every copy. Hold OK › Play from… lists each copy with its server,
+  quality, audio languages and speed. Other-video libraries are browsed by folder.
 - **No detail pages.** OK plays from the beginning. Hold OK for a menu: resume, mark watched or unwatched,
-  favourites, and Info, a short summary of the file.
-- **Shows:** Play (continue where you left off), Shuffle and Shuffle favorites, then your favourite
-  episodes (Plex label `fav`) and one row per season. Audio and subtitle languages are remembered per show.
-- **Search** across the libraries on Home, including episode descriptions, typed or spoken into the
-  remote's mic.
-- **PlexVerse:** every Plex server your account can reach, merged into one Movies, Series and Videos
-  view, with a Continue watching row across them. A title on several servers shows once, plays from the
-  first server in your order that's reachable, and its progress goes to every copy. Customize sorts each
-  server's libraries into the categories.
-- **Kids:** when PlexVerse keeps kids' libraries separate, their movies and series in one grid of big
-  posters. Surprise me! spins a reel of their posters, stops on a random one and plays it after a short
-  countdown (a series plays a random episode).
-- **Player** (Media3 ExoPlayer):
-  - Direct play. Video only goes through the TV's hardware decoder, which also does the deinterlacing.
-    Video the TV can't decode (VC-1 on many TVs) is converted by Plex instead of playing as a black picture.
-  - Audio passes through as a bitstream when the TV and receiver accept it (AC3, E-AC3 with Atmos, DTS,
-    DTS-HD; some TVs send only the DTS core of DTS-HD). Multichannel audio the TV would only send as stereo
-    (TrueHD, LPCM, FLAC, AAC) is converted by Plex to 5.1. When the file also has a same-language
-    compatibility track, Simplex asks which to use.
-  - Left or right jumps 10 s either way; held, they drag the playhead with Plex's preview thumbnails
-    (tone-mapped for HDR) while the video keeps playing.
-  - Down from the controls opens the file's chapters, with their thumbnails.
-  - Previous and next episode, and Skip intro from Plex's markers. The remote's audio and subtitle buttons
-    step through the tracks.
-  - Optional readout of the video and audio formats, how the audio reaches the receiver and whether Plex
-    is converting anything (Settings, or the remote's Info button).
-  - Blu-ray (PGS) and DVD (VobSub) subtitles are brightened to true white. Text subtitles get a black
-    outline.
-  - Back from a video puts focus on the card it was started from.
-- **Settings:** light, dark, or dark between sunset and sunrise where the server is; the playback readout;
-  tunneled playback (video and sound kept in step by the TV's hardware); blurred pictures of episodes you
-  haven't started (no spoilers); which libraries show on Home; the server, and waking it with Wake-on-LAN
-  when it's asleep (its MAC address is typed in once); clearing the cached thumbnails and artwork;
-  installing a newer version from GitHub; signing out.
-- **Made for slow TVs:** the logo until Home has its content; when you open a screen, the last one stays
-  until the next has its content, then gives way with a short crossfade, so you never see an empty
-  screen. Focus lifts the card with a shadow. All kept cheap enough for 60 fps on a TV's modest GPU and CPU.
+  favourites, and Info. Shows: Play (where you left off), Shuffle, favourite episodes, a row per season.
+- **Search** across every server, including episode descriptions, typed or spoken into the remote's mic.
+- **Kids mode:** a Kids profile opens it as the whole app: big posters of the libraries a grown-up picked,
+  nothing rated above its age ceiling, Surprise me!, its own Continue watching, and at most N episodes in
+  a row. No menu or Settings, and Back does nothing; a grown-up holds Back for 3 seconds and enters the
+  owner's Plex PIN (or answers a sum).
+- **Light and dark:** Auto (the default) is dark after sunset and light after sunrise, from the TV's IP
+  address or a place set by hand; or always Light or Dark. By day the sky is sunlit and the planet a sun.
+- **Player** (Media3 ExoPlayer, from simplex-core): direct play through the TV's hardware decoder; audio
+  passed through as a bitstream when the TV and receiver accept it, otherwise converted by Plex to 5.1;
+  10 s jumps and scrubbing with preview thumbnails; chapters; skip intro; per-show audio and subtitle
+  languages; an optional readout of what reaches the receiver.
+- **Made for slow TVs:** the last screen stays until the next has its content, then crossfades; the sky
+  is drawn once into a picture; focus lifts the card with a shadow. 60 fps on a TV's modest GPU and CPU.
 
 ## Build and install
 
@@ -67,21 +53,16 @@ adb connect <tv-ip>:5555
 adb install -r app/build/outputs/apk/release/app-release.apk
 ```
 
-Sign in on the TV with the code shown at plex.tv/link. Release builds are signed with a key kept outside
-the repo (`~/.simplex-release`, see `app/build.gradle.kts`); without it they fall back to the debug key.
-`tools/release.sh` publishes a signed build as a GitHub release, which release builds offer to install.
+Release builds are signed with a key kept outside the repo (`~/.plexverse-release`, see
+`app/build.gradle.kts`); without it they fall back to the debug key. `tools/release.sh` publishes a
+signed build as a GitHub release of `molnarroland/PlexVerse`, which release builds offer to install.
 
 ## The core
 
-The Plex connection and the player are [simplex-core](https://github.com/embergabor/simplex-core), the
-library Simplex uses too. PlexVerse uses the version named in `app/build.gradle.kts`, fetched from
-[simplex-maven](https://github.com/embergabor/simplex-maven). Two optional lines in `local.properties`
-change that:
-
-- `simplexCore.dir=../simplex-core` builds from a checkout of the core instead, to work on both at once.
-- `simplexMaven.dir=../simplex-maven` takes versions from a local checkout before they're pushed.
-
-PlexVerse's own additions to the shared look (Kids' colour, its icons) are in `ui/KidsLook.kt`.
+The Plex connection, the player and the cards come from simplex-core, used only as published to
+[simplex-maven](https://github.com/embergabor/simplex-maven), at the version named in
+`app/build.gradle.kts`. Everything else (profiles, merging and ranking, categories, Kids mode, the look)
+is PlexVerse's own, in `app/src/main/java/hu/molnarroland/plexverse`.
 
 ## Server script: compatibility tracks for TrueHD
 

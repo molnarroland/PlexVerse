@@ -7,9 +7,9 @@ plugins {
     id("androidx.baselineprofile")
 }
 
-// The release key lives outside the repo (~/.simplex-release, backed up by its owner). Without it,
+// The release key lives outside the repo (~/.plexverse-release, backed up by its owner). Without it,
 // release builds fall back to the debug key, which can't update a TV that has a real release on it.
-val releaseKey = File(System.getProperty("user.home"), ".simplex-release/keystore.properties")
+val releaseKey = File(System.getProperty("user.home"), ".plexverse-release/keystore.properties")
     .takeIf { it.exists() }
     ?.let { f -> Properties().apply { f.inputStream().use(::load) } }
 
@@ -18,11 +18,11 @@ val commitCount = providers.exec { commandLine("git", "rev-list", "--count", "HE
     .standardOutput.asText.get().trim().toIntOrNull() ?: 1
 
 android {
-    namespace = "com.ember.simpleplex"
+    namespace = "hu.molnarroland.plexverse"
     compileSdk = 37
 
     defaultConfig {
-        applicationId = "com.ember.plexverse"
+        applicationId = "hu.molnarroland.plexverse"
         minSdk = 26
         targetSdk = 37
         versionCode = commitCount
@@ -71,9 +71,13 @@ android {
 }
 
 dependencies {
-    // The Plex connection, the player and the player's look (github.com/embergabor/simplex-core), shared
-    // with Simplex; brings Compose, Media3, Coil and OkHttp.
+    // The Plex connection, the player and the cards (simplex-core, from github.com/embergabor/simplex-maven);
+    // brings Compose, Media3, Coil and OkHttp.
     implementation("com.embergabor:simplex-core:0.1.2")
+    // The system splash on Android 12+, handing over to the app's own animated one.
+    implementation("androidx.core:core-splashscreen:1.0.1")
+    // The QR code on the sign-in screen.
+    implementation("com.google.zxing:core:3.5.3")
     implementation("androidx.profileinstaller:profileinstaller:1.4.1")
     baselineProfile(project(":baselineprofile"))
 

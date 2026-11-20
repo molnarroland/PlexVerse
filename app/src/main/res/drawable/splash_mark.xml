@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The system splash: the still mark, where the app's animated one takes over. Drawn by hand to match ui/Look.kt's drawMark. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="288dp"
+    android:height="288dp"
+    android:viewportWidth="288"
+    android:viewportHeight="288">
+    <group android:translateX="64" android:translateY="64" android:scaleX="1.6" android:scaleY="1.6">
+    <group android:translateX="50" android:translateY="50" android:rotation="-20">
+        <path android:strokeColor="#C9A6FF" android:strokeWidth="2.2" android:pathData="M-47,0 A47,13 0 0,1 47,0" />
+        <path android:fillColor="#FFFFFF" android:pathData="M-31.26,-10.65a4.3,4.3 0 1,0 8.6,0a4.3,4.3 0 1,0 -8.6,0" />
+    </group>
+    <path android:pathData="M16.00,50.00a34,34 0 1,0 68,0a34,34 0 1,0 -68,0">
+        <aapt:attr name="android:fillColor">
+            <gradient android:type="radial" android:centerX="50" android:centerY="50" android:gradientRadius="34">
+                <item android:offset="0.55" android:color="#609B5CFF" />
+                <item android:offset="1" android:color="#009B5CFF" />
+            </gradient>
+        </aapt:attr>
+    </path>
+    <path android:pathData="M27.00,50.00a23,23 0 1,0 46,0a23,23 0 1,0 -46,0">
+        <aapt:attr name="android:fillColor">
+            <gradient android:type="radial" android:centerX="42.6" android:centerY="39.9" android:gradientRadius="34.5">
+                <item android:offset="0" android:color="#FFF1E6FF" />
+                <item android:offset="0.22" android:color="#FFB48CFF" />
+                <item android:offset="0.52" android:color="#FF7B3FE4" />
+                <item android:offset="1" android:color="#FF2A0E5C" />
+            </gradient>
+        </aapt:attr>
+    </path>
+    <path android:fillColor="#EB0B0714" android:pathData="M44.58,40.8 L58.84,50 L44.58,59.2 Z" />
+    <group android:translateX="50" android:translateY="50" android:rotation="-20">
+        <path android:strokeColor="#C9A6FF" android:strokeWidth="2.2" android:pathData="M47,0 A47,13 0 0,1 -47,0" />
+        <path android:fillColor="#FFFFFF" android:pathData="M42.70,0.00a4.3,4.3 0 1,0 8.6,0a4.3,4.3 0 1,0 -8.6,0" />
+        <path android:fillColor="#E3D2FF" android:pathData="M-30.26,10.65a3.3,3.3 0 1,0 6.6,0a3.3,3.3 0 1,0 -6.6,0" />
+    </group>
+    </group>
+</vector>
