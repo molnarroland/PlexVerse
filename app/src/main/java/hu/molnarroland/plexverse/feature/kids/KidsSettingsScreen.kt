@@ -29,6 +29,8 @@ import androidx.tv.material3.Text
 import com.embergabor.simplex.core.plex.Library
 import com.embergabor.simplex.core.plex.PlexClient
 import com.embergabor.simplex.core.ui.Palette
+import com.embergabor.simplex.core.ui.IconPillButton
+import com.embergabor.simplex.core.ui.Icons
 import com.embergabor.simplex.core.ui.PillButton
 import hu.molnarroland.plexverse.data.SetupPrefs
 import hu.molnarroland.plexverse.data.VerseStore
@@ -125,7 +127,7 @@ fun KidsSettingsContent(
                 Modifier.remembersFocus(memory, "local", default = people.isEmpty()),
                 selected = localKids,
             )
-            if (localKids) PillButton("Rename", onRenameLocal)
+            if (localKids) IconPillButton(Icons.Edit, "Rename $localKidsName", onRenameLocal)
         }
         if (kidsProfiles.isEmpty() || selected == null || settings == null) return@Column
         SectionTitle("Settings for")

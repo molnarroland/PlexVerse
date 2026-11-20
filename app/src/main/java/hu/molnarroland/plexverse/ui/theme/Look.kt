@@ -28,8 +28,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.geometry.RoundRect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -40,6 +42,7 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.graphics.drawscope.scale
+import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.SpanStyle
@@ -193,8 +196,8 @@ fun Wordmark(fontSize: TextUnit, modifier: Modifier = Modifier) {
 }
 
 /**
- * The sky behind every screen: deep space with nebulae and stars at night, a sunlit sky with rays and
- * sparkles by day, mint-tinted for Kids. Drawn once into a picture per size and theme, so each frame
+ * The sky behind every screen: deep space with nebulae and stars at night, a pale sky with soft clouds by
+ * day, mint-tinted for Kids. Drawn once into a picture per size and theme, so each frame
  * costs one full-screen pass on the TV's GPU, not a dozen.
  */
 object Sky {
@@ -235,31 +238,47 @@ object Sky {
     private fun DrawScope.drawDay(kids: Boolean) {
         val w = size.width
         val h = size.height
-        drawRect(Brush.linearGradient(listOf(Color(0xFFFFF4E0), if (kids) Color(0xFFF2FFFA) else Color(0xFFFCF3FF), if (kids) Color(0xFFE3FBF4) else Color(0xFFEFE6FF)), Offset(w, 0f), Offset(0f, h)))
-        val sun = Offset(w * 0.84f, h * 0.06f)
-        // Rays from the sun, fading out.
-        for (i in 0 until 33) rotate(i * 11f + 3f, sun) {
-            val ray = Path().apply { moveTo(sun.x, sun.y); lineTo(sun.x + w * 0.7f, sun.y - w * 0.015f); lineTo(sun.x + w * 0.7f, sun.y + w * 0.015f); close() }
-            drawPath(ray, Brush.radialGradient(listOf(Color.White.copy(alpha = 0.45f), Color.Transparent), sun, w * 0.55f))
+        // A cool, pale sky: periwinkle above, lightening towards the bottom (mint for Kids).
+        drawRect(
+            Brush.verticalGradient(
+                if (kids) listOf(Color(0xFFCFEDF0), Color(0xFFE6F6F3), Color(0xFFF5FCF9))
+                else listOf(Color(0xFFD6DCFA), Color(0xFFE9E6FA), Color(0xFFF6F2FC)),
+            ),
+        )
+        // Soft daylight from the top right, white rather than gold.
+        nebula(Offset(w * 0.82f, 0f), w * 0.55f, h * 0.7f, Color.White.copy(alpha = 0.55f))
+        nebula(Offset(w * 0.1f, h), w * 0.5f, h * 0.45f, (if (kids) Color(0xFF9FE8D6) else Color(0xFFD8C6FF)).copy(alpha = 0.35f))
+
+        // Clouds, far ones small and faint, near ones large, kept to the edges so the middle stays calm.
+        cloud(Offset(w * 0.30f, h * 0.20f), w * 0.11f, 0.45f, Random(3))
+        cloud(Offset(w * 0.62f, h * 0.12f), w * 0.08f, 0.35f, Random(5))
+        cloud(Offset(w * 0.06f, h * 0.30f), w * 0.16f, 0.6f, Random(8))
+        cloud(Offset(w * 0.86f, h * 0.24f), w * 0.24f, 0.8f, Random(13))
+        cloud(Offset(w * 0.95f, h * 1.05f), w * 0.24f, 0.7f, Random(17))
+        cloud(Offset(w * 0.14f, h * 1.06f), w * 0.28f, 0.75f, Random(21))
+    }
+
+    /**
+     * A cumulus [width] wide, its flat base centred on [base]: a row of overlapping puffs filled as one
+     * shape (so they don't stack their alpha), with a soft rim and a lilac shade underneath.
+     */
+    private fun DrawScope.cloud(base: Offset, width: Float, alpha: Float, rnd: Random) {
+        val shape = Path()
+        val puffs = 5
+        for (i in 0 until puffs) {
+            val t = i / (puffs - 1f)
+            // Biggest in the middle, smaller towards the ends.
+            val r = width * (0.12f + 0.16f * sin(PI.toFloat() * t)) * (0.85f + rnd.nextFloat() * 0.3f)
+            val x = base.x - width / 2 + width * (0.12f + 0.76f * t)
+            shape.addOval(Rect(Offset(x, base.y - r * 0.9f), r))
         }
-        drawCircle(Brush.radialGradient(0f to Color.White, 0.15f to Color(0xFFFFF7D6), 0.35f to Color(0xFFFFCE78).copy(alpha = 0.6f), 1f to Color.Transparent, center = sun, radius = w * 0.5f), w * 0.5f, sun)
-        nebula(Offset(w * 0.06f, h), w * 0.55f, h * 0.6f, (if (kids) Color(0xFF4FE3C1) else Color(0xFFBE96FF)).copy(alpha = 0.35f))
-        nebula(Offset(w * 0.4f, h * 1.1f), w * 0.4f, h * 0.45f, Color(0xFFFFAAD7).copy(alpha = 0.3f))
-        val rnd = Random(11)
-        repeat(90) {
-            val r = (rnd.nextFloat().let { it * it } * 0.9f + 0.3f) * w / 400f
-            drawCircle((if (rnd.nextBoolean()) Color(0xFF8E5BEA) else Color(0xFFF2A93B)).copy(alpha = 0.25f + rnd.nextFloat() * 0.5f), r, Offset(rnd.nextFloat() * w, rnd.nextFloat() * h))
-        }
-        // Sparkles: four-pointed stars.
-        repeat(18) {
-            val at = Offset(rnd.nextFloat() * w, rnd.nextFloat() * h)
-            val k = (0.25f + rnd.nextFloat() * 0.35f) * w / 400f * 10f
-            val sparkle = Path().apply {
-                moveTo(at.x, at.y - k); quadraticTo(at.x, at.y, at.x + k, at.y); quadraticTo(at.x, at.y, at.x, at.y + k)
-                quadraticTo(at.x, at.y, at.x - k, at.y); quadraticTo(at.x, at.y, at.x, at.y - k); close()
-            }
-            drawPath(sparkle, if (rnd.nextFloat() < 0.6f) Color(0xFFF2A93B) else Color(0xFF9B5CFF))
-        }
+        val baseHeight = width * 0.14f
+        shape.addRoundRect(RoundRect(base.x - width / 2, base.y - baseHeight, base.x + width / 2, base.y, CornerRadius(baseHeight / 2)))
+        val shade = Color(0xFFB9A8E8)
+        translate(top = width * 0.035f) { drawPath(shape, shade.copy(alpha = 0.22f * alpha)) }
+        // The rim: the shape drawn a few times with wider, fainter strokes, which reads as a soft edge.
+        for (k in 1..3) drawPath(shape, Color.White.copy(alpha = 0.10f * alpha), style = Stroke(width * 0.02f * k))
+        drawPath(shape, Brush.verticalGradient(listOf(Color.White.copy(alpha = alpha), Color(0xFFF1ECFF).copy(alpha = alpha)), base.y - width * 0.4f, base.y))
     }
 }
 

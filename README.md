@@ -1,4 +1,21 @@
-# PlexVerse
+<p align="center">
+  <img src="docs/img/icon.svg" width="112" alt="PlexVerse icon">
+</p>
+
+<h1 align="center">PlexVerse</h1>
+
+<p align="center">
+  <b>All your Plex servers. One library, on the TV.</b><br>
+  An Android TV client built on <a href="https://github.com/embergabor/simplex">Simplex</a> and embergabor's simplex-core.<br>
+  <a href="https://molnarroland.github.io/PlexVerse/">Website and tour</a> ·
+  <a href="#build-and-install">Install</a> ·
+  <a href="#built-on-simplex">Built on Simplex</a>
+</p>
+
+<p align="center">
+  <img src="docs/screens/home-night.jpg" width="49%" alt="Home, night">
+  <img src="docs/screens/kids-day.jpg" width="49%" alt="Kids mode, day">
+</p>
 
 Every Plex server your account reaches, as one set of libraries, on Android TV. PlexVerse merges the
 movies and shows of all of them, plays each title from the best server that has it, and gives every
@@ -7,6 +24,20 @@ person in the house their own profile, with a Kids mode a child can't wander out
 A deliberately simple client: no recommendations, descriptions, cast or reviews. Built for a Sony Bravia
 (Google TV) sending audio over eARC to an AV receiver, but it should run on any Android TV 8.0+.
 Package: `hu.molnarroland.plexverse`.
+
+## Features
+
+| | |
+|---|---|
+| 🪐 **Every server, one library** | Movies and shows from all your servers, merged. Each title shows once and plays from the best server that has it. |
+| 👥 **Who's watching?** | Plex Home profiles with their own progress, restrictions and PINs. Hold Back on Home to switch. |
+| 🧸 **Kids mode** | Chosen libraries, an age ceiling, Surprise me!, an episode limit, and a grown-ups' gate. |
+| 🗂️ **Your own categories** | Movies and Series fill themselves; add Documentaries, Anime…, pin one to the menu. |
+| 🔎 **Search everywhere** | Every server at once, episode descriptions too, typed or spoken. |
+| 🌙 **Night and day** | A deep-space night and a soft cloudy day, switching at sunset and sunrise. |
+| 🔊 **Direct play, real surround** | Hardware decoding and audio passthrough to your receiver, skip intro, preview thumbnails. |
+| ⚡ **Made for slow TVs** | Crossfades once content is ready, a sky drawn once, 60 fps on modest hardware. |
+| ▶️ **No detail pages** | OK plays; hold OK for a short menu. |
 
 ## What it does
 
@@ -35,7 +66,7 @@ Package: `hu.molnarroland.plexverse`.
   a row. No menu or Settings, and Back does nothing; a grown-up holds Back for 3 seconds and enters the
   owner's Plex PIN (or answers a sum).
 - **Light and dark:** Auto (the default) is dark after sunset and light after sunrise, from the TV's IP
-  address or a place set by hand; or always Light or Dark. By day the sky is sunlit and the planet a sun.
+  address or a place set by hand; or always Light or Dark. By day the sky is pale with soft clouds.
 - **Player** (Media3 ExoPlayer, from simplex-core): direct play through the TV's hardware decoder; audio
   passed through as a bitstream when the TV and receiver accept it, otherwise converted by Plex to 5.1;
   10 s jumps and scrubbing with preview thumbnails; chapters; skip intro; per-show audio and subtitle
@@ -57,12 +88,23 @@ Release builds are signed with a key kept outside the repo (`~/.plexverse-releas
 `app/build.gradle.kts`); without it they fall back to the debug key. `tools/release.sh` publishes a
 signed build as a GitHub release.
 
-## The core
+## Built on Simplex
 
-The Plex connection, the player and the cards come from simplex-core, used only as published to
-[simplex-maven](https://github.com/embergabor/simplex-maven), at the version named in
+PlexVerse started as a branch of [Simplex](https://github.com/embergabor/simplex), embergabor's
+deliberately simple Android TV client for Plex (direct play, audio passthrough, no bloat), and grew into
+its own project. Thank you, embergabor.
+
+The Plex connection, the player and the cards come from embergabor's **simplex-core**, used only as
+published to [simplex-maven](https://github.com/embergabor/simplex-maven), at the version named in
 `app/build.gradle.kts`. Everything else (profiles, merging and ranking, categories, Kids mode, the look)
 is PlexVerse's own, in `app/src/main/java/hu/molnarroland/plexverse`.
+
+## Website
+
+[`docs/`](docs) is the project's GitHub Pages site (Settings › Pages › Deploy from a branch, `main`,
+`/docs`): a TV-sized slideshow of every screen, in night and day, with the features and install steps.
+The screens are the app's own screenshot tests (`./gradlew updateDebugScreenshotTest`), exported from
+`app/src/screenshotTestDebug/reference` to `docs/screens`.
 
 ## Server script: compatibility tracks for TrueHD
 

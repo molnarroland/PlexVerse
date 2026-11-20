@@ -13,8 +13,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -32,6 +30,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.Text
+import com.embergabor.simplex.core.ui.IconPillButton
+import com.embergabor.simplex.core.ui.Icons
 import com.embergabor.simplex.core.ui.Palette
 import com.embergabor.simplex.core.ui.PillButton
 import hu.molnarroland.plexverse.data.OtherCategory
@@ -44,7 +44,7 @@ import hu.molnarroland.plexverse.ui.ScreenTitle
 import hu.molnarroland.plexverse.ui.TextEntryDialog
 import hu.molnarroland.plexverse.ui.rememberFocusMemory
 import hu.molnarroland.plexverse.ui.remembersFocus
-import hu.molnarroland.plexverse.ui.theme.Look
+import hu.molnarroland.plexverse.ui.theme.AppIcons
 
 /**
  * Others › Manage categories: add (named with the TV keyboard, or its mic), rename, order, pin one to
@@ -84,8 +84,8 @@ fun ManageCategoriesScreen(nav: Nav) {
 }
 
 /**
- * Manage categories as shown: Movies and Series (rename only), then each Other with Pin, Rename, ▲ ▼ and
- * Delete, and New category. [onRename] gets a category id, or "" for a new one.
+ * Manage categories as shown: Movies and Series (rename only), then each Other with icon buttons for Pin,
+ * move up and down, Rename and Delete, and New category. [onRename] gets a category id, or "" for a new one.
  */
 @Composable
 fun ManageCategoriesContent(
@@ -100,24 +100,36 @@ fun ManageCategoriesContent(
         verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
         ScreenTitle("Manage categories")
-        Text("Others are shown in the Others popup. ★ is pinned to the main menu, one at a time.", fontSize = 12.sp, color = Palette.Secondary)
+        Text("Others are shown in the Others popup. The one with a filled star is pinned to the main menu, one at a time.", fontSize = 12.sp, color = Palette.Secondary)
         for (id in listOf(VerseSetup.MOVIES, VerseSetup.SERIES)) {
-            CategoryRow(setup.name(id), "built in · ${setup.keysIn(id).size} libraries", pinned = null) {
-                PillButton("Rename", { onRename(id) }, Modifier.remembersFocus(memory, "rename-$id", default = id == VerseSetup.MOVIES && setup.others.isEmpty()))
+            CategoryRow(setup.name(id), "built in · ${libraries(setup.keysIn(id).size)}") {
+                // Unseen, unfocusable stand-ins for Pin, up and down, so Rename lines up with the Others' below.
+                repeat(3) { IconPillButton(AppIcons.Star, "", null, Modifier.alpha(0f)) }
+                IconPillButton(Icons.Edit, "Rename ${setup.name(id)}", { onRename(id) }, Modifier.remembersFocus(memory, "rename-$id", default = id == VerseSetup.MOVIES && setup.others.isEmpty()))
+                IconPillButton(AppIcons.Trash, "", null, Modifier.alpha(0f))
             }
         }
         setup.others.forEachIndexed { i, o ->
-            CategoryRow(o.name, "${setup.keysIn(o.id).size} libraries${if (o.id == VerseSetup.VIDEOS) " · from other-video libraries" else ""}", pinned = o.id == setup.pinned) {
-                PillButton(if (o.id == setup.pinned) "Pinned" else "Pin", { save(setup.togglePin(o.id)) }, Modifier.remembersFocus(memory, "pin-${o.id}", default = i == 0), selected = o.id == setup.pinned)
-                PillButton("Rename", { onRename(o.id) })
-                if (i > 0) PillButton("▲", { save(setup.moveOther(o.id, -1)) })
-                if (i < setup.others.lastIndex) PillButton("▼", { save(setup.moveOther(o.id, 1)) })
-                PillButton("Delete", { onDelete(o) })
+            val pinned = o.id == setup.pinned
+            CategoryRow(o.name, "${libraries(setup.keysIn(o.id).size)}${if (o.id == VerseSetup.VIDEOS) " · from other-video libraries" else ""}${if (pinned) " · pinned" else ""}") {
+                IconPillButton(
+                    if (pinned) AppIcons.StarFilled else AppIcons.Star,
+                    if (pinned) "Unpin ${o.name}" else "Pin ${o.name} to the main menu",
+                    { save(setup.togglePin(o.id)) },
+                    Modifier.remembersFocus(memory, "pin-${o.id}", default = i == 0),
+                )
+                // At the ends, dimmed and skipped by focus rather than gone, so the columns stay in line.
+                IconPillButton(AppIcons.Up, "Move ${o.name} up", if (i > 0) ({ save(setup.moveOther(o.id, -1)) }) else null)
+                IconPillButton(AppIcons.Down, "Move ${o.name} down", if (i < setup.others.lastIndex) ({ save(setup.moveOther(o.id, 1)) }) else null)
+                IconPillButton(Icons.Edit, "Rename ${o.name}", { onRename(o.id) })
+                IconPillButton(AppIcons.Trash, "Delete ${o.name}", { onDelete(o) })
             }
         }
-        Row(Modifier.padding(top = 10.dp)) { PillButton("+ New category", { onRename("") }) }
+        Row(Modifier.padding(top = 10.dp)) { PillButton("New category", { onRename("") }, icon = AppIcons.Plus) }
     }
 }
+
+private fun libraries(n: Int) = if (n == 1) "1 library" else "$n libraries"
 
 @TvPreviews
 @Composable
@@ -126,13 +138,12 @@ internal fun ManageCategoriesPreview() = PreviewTheme {
 }
 
 @Composable
-private fun CategoryRow(name: String, about: String, pinned: Boolean?, actions: @Composable () -> Unit) {
+private fun CategoryRow(name: String, about: String, actions: @Composable () -> Unit) {
     Row(
         Modifier.fillMaxWidth().background(Palette.Tile.copy(alpha = 0.72f), RoundedCornerShape(10.dp)).padding(horizontal = 14.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(10.dp),
     ) {
-        Text(when (pinned) { true -> "★"; false -> "☆"; null -> " " }, fontSize = 16.sp, color = Look.Accent, modifier = Modifier.width(18.dp))
         Column(Modifier.weight(1f)) {
             Text(name, fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = Palette.Ink)
             Text(about, fontSize = 11.sp, color = Palette.Secondary)
