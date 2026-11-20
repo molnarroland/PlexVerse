@@ -1,7 +1,7 @@
 package com.ember.simpleplex.ui
 
 import android.content.Context
-import com.ember.simpleplex.plex.Library
+import com.embergabor.simplex.core.plex.Library
 import org.json.JSONArray
 import org.json.JSONObject
 

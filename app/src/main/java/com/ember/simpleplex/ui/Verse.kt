@@ -1,9 +1,9 @@
 package com.ember.simpleplex.ui
 
 import android.content.Context
-import com.ember.simpleplex.plex.Item
-import com.ember.simpleplex.plex.PlexClient
-import com.ember.simpleplex.plex.PlexServer
+import com.embergabor.simplex.core.plex.Item
+import com.embergabor.simplex.core.plex.PlexClient
+import com.embergabor.simplex.core.plex.PlexServer
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

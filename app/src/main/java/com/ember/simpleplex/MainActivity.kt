@@ -49,10 +49,10 @@ import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.foundation.Canvas
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.graphics.toArgb
-import com.ember.simpleplex.player.PlayerActivity
-import com.ember.simpleplex.plex.PlexClient
-import com.ember.simpleplex.plex.PlexServer
-import com.ember.simpleplex.ui.AppTheme
+import com.embergabor.simplex.core.player.PlayerActivity
+import com.embergabor.simplex.core.plex.PlexClient
+import com.embergabor.simplex.core.plex.PlexServer
+import com.embergabor.simplex.core.ui.AppTheme
 import com.ember.simpleplex.ui.Backdrop
 import com.ember.simpleplex.ui.Backdrops
 import com.ember.simpleplex.ui.LocalScreenBackdrop
@@ -67,7 +67,7 @@ import com.ember.simpleplex.ui.KidsScreen
 import com.ember.simpleplex.ui.LocalRefresh
 import com.ember.simpleplex.ui.LocalRefreshBump
 import com.ember.simpleplex.ui.Nav
-import com.ember.simpleplex.ui.Palette
+import com.embergabor.simplex.core.ui.Palette
 import com.ember.simpleplex.ui.PivotScroll
 import com.ember.simpleplex.ui.RemoteKeys
 import com.ember.simpleplex.ui.PlexVerseScreen

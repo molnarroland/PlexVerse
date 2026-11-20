@@ -19,6 +19,7 @@ import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.graphics.vector.PathParser
 import androidx.compose.ui.unit.dp
+import com.embergabor.simplex.core.ui.Palette
 
 /** Set by MainActivity on any key, and once Home has its content: the logo shows once per start of the app. */
 var introSkipped by mutableStateOf(false)

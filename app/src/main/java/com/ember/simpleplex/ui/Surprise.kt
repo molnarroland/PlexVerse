@@ -71,8 +71,10 @@ import androidx.tv.material3.Glow
 import androidx.tv.material3.Icon
 import androidx.tv.material3.Text
 import coil3.compose.AsyncImage
-import com.ember.simpleplex.plex.Item
-import com.ember.simpleplex.plex.PlexServer
+import com.embergabor.simplex.core.plex.Item
+import com.embergabor.simplex.core.plex.PlexServer
+import com.embergabor.simplex.core.ui.Palette
+import com.embergabor.simplex.core.ui.Icons
 
 /** Dark brown on the Kids orange, as on the Kids button. */
 private val OnKids = Color(0xFF2A1A00)
@@ -89,8 +91,8 @@ fun SurpriseButton(onClick: () -> Unit, modifier: Modifier = Modifier) {
             scale = ButtonDefaults.scale(focusedScale = 1.1f),
             glow = ButtonDefaults.glow(focusedGlow = Glow(Color(0xFFFF8C00).copy(alpha = 0.35f), 18.dp)),
             colors = ButtonDefaults.colors(
-                containerColor = Palette.Kids, contentColor = OnKids,
-                focusedContainerColor = Palette.Kids, focusedContentColor = OnKids,
+                containerColor = KidsLook.Fill, contentColor = OnKids,
+                focusedContainerColor = KidsLook.Fill, focusedContentColor = OnKids,
             ),
         ) {
             Canvas(Modifier.fillMaxSize()) { drawDie() }
@@ -193,7 +195,7 @@ fun Surprise(entries: List<VerseEntry>, connected: Map<String, PlexServer>, nav:
                                 alpha = if (isPick) 1f else dim
                                 if (isPick) { scaleX = lift; scaleY = lift }
                             }
-                            .then(if (isPick && landed) Modifier.border(3.dp, Palette.Kids, RoundedCornerShape(16.dp)) else Modifier)
+                            .then(if (isPick && landed) Modifier.border(3.dp, KidsLook.Fill, RoundedCornerShape(16.dp)) else Modifier)
                             .clip(RoundedCornerShape(16.dp))
                             .background(Palette.Placeholder),
                     ) {
@@ -241,7 +243,7 @@ fun Surprise(entries: List<VerseEntry>, connected: Map<String, PlexServer>, nav:
                         KidsButton(
                             onClick = ::play,
                             modifier = Modifier.focusRequester(first).onFocusChanged { if (!it.isFocused && ring.value > 0f) counting = false },
-                            fill = Palette.Kids, content = OnKids,
+                            fill = KidsLook.Fill, content = OnKids,
                         ) {
                             // The ring runs down while Play counts to starting by itself.
                             Box(Modifier.size(26.dp), contentAlignment = Alignment.Center) {
@@ -257,7 +259,7 @@ fun Surprise(entries: List<VerseEntry>, connected: Map<String, PlexServer>, nav:
                             Text("Play", fontSize = 15.sp, fontWeight = FontWeight.ExtraBold)
                         }
                         KidsButton(onClick = { spin++ }, fill = Palette.Control, content = Palette.Ink) {
-                            Icon(Icons.Dice, contentDescription = null, modifier = Modifier.size(18.dp))
+                            Icon(KidsLook.Dice, contentDescription = null, modifier = Modifier.size(18.dp))
                             Spacer(Modifier.width(10.dp))
                             Text("Spin again", fontSize = 14.sp, fontWeight = FontWeight.Bold)
                         }
@@ -278,8 +280,8 @@ private fun KidsButton(onClick: () -> Unit, fill: Color, content: Color, modifie
         scale = ButtonDefaults.scale(focusedScale = 1.06f),
         colors = ButtonDefaults.colors(
             containerColor = fill, contentColor = content,
-            focusedContainerColor = if (fill == Palette.Kids) fill else Palette.Ink,
-            focusedContentColor = if (fill == Palette.Kids) content else Palette.OnInk,
+            focusedContainerColor = if (fill == KidsLook.Fill) fill else Palette.Ink,
+            focusedContentColor = if (fill == KidsLook.Fill) content else Palette.OnInk,
         ),
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) { label() }

@@ -77,14 +77,22 @@ import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.Icon
 import androidx.tv.material3.LocalContentColor
 import androidx.tv.material3.Text
-import com.ember.simpleplex.plex.Library
-import com.ember.simpleplex.plex.PlexClient
+import com.embergabor.simplex.core.plex.Library
+import com.embergabor.simplex.core.plex.PlexClient
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
+import com.embergabor.simplex.core.ui.Palette
+import com.embergabor.simplex.core.ui.Icons
+import com.embergabor.simplex.core.ui.PosterCard
+import com.embergabor.simplex.core.ui.WideCard
+import com.embergabor.simplex.core.ui.IconTile
+import com.embergabor.simplex.core.ui.PillButton
+import com.embergabor.simplex.core.ui.okKeys
+import com.embergabor.simplex.core.ui.timeLeft
 
 /**
  * The menu at the top of Home, PlexVerse and Kids: a capsule in the middle, tvOS style, with Search,
@@ -104,7 +112,7 @@ fun TopMenu(current: Screen, nav: Nav, modifier: Modifier = Modifier) {
             if (current != Screen.Kids) MenuItem(null, Icons.Search, "Search", selected = false) { nav.push(Screen.Search) }
             MenuItem("Home", null, null, current == Screen.Home) { nav.push(Screen.Home) }
             MenuItem("PlexVerse", null, null, current == Screen.PlexVerse) { nav.push(Screen.PlexVerse) }
-            if (kids) MenuItem("Kids", Icons.Smile, null, current == Screen.Kids, kids = true) { nav.push(Screen.Kids) }
+            if (kids) MenuItem("Kids", KidsLook.Smile, null, current == Screen.Kids, kids = true) { nav.push(Screen.Kids) }
             if (current != Screen.Kids) MenuItem(null, Icons.Settings, "Settings", selected = false) { nav.push(Screen.Settings) }
         }
     }
@@ -114,8 +122,8 @@ fun TopMenu(current: Screen, nav: Nav, modifier: Modifier = Modifier) {
 @Composable
 private fun MenuItem(label: String?, icon: ImageVector?, description: String?, selected: Boolean, kids: Boolean = false, onClick: () -> Unit) {
     // The orange reads on the dark ground; on the light one a deeper orange does.
-    val kidsText = if (Palette.Ground.luminance() < 0.5f) Palette.Kids else Color(0xFF9A5B00)
-    val fill = if (kids) Palette.Kids else Palette.Ink
+    val kidsText = if (Palette.Ground.luminance() < 0.5f) KidsLook.Fill else Color(0xFF9A5B00)
+    val fill = if (kids) KidsLook.Fill else Palette.Ink
     val onFill = if (kids) Color(0xFF2A1A00) else Palette.OnInk
     Button(
         onClick = onClick,

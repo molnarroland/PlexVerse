@@ -1,4 +1,8 @@
-# Simplex
+# PlexVerse
+
+Simplex with every server at once: PlexVerse merges all the Plex servers your account reaches into one
+set of libraries, and adds Kids, a separate place for children's libraries. It started as the `plexverse`
+branch of [Simplex](https://github.com/embergabor/simplex) and installs next to it (`com.ember.plexverse`).
 
 A deliberately simple Android TV client for an existing Plex Media Server. It shows your movies, TV shows
 and "other videos" libraries and plays the files as they are. It has no recommendations, descriptions,
@@ -66,6 +70,18 @@ adb install -r app/build/outputs/apk/release/app-release.apk
 Sign in on the TV with the code shown at plex.tv/link. Release builds are signed with a key kept outside
 the repo (`~/.simplex-release`, see `app/build.gradle.kts`); without it they fall back to the debug key.
 `tools/release.sh` publishes a signed build as a GitHub release, which release builds offer to install.
+
+## The core
+
+The Plex connection and the player are [simplex-core](https://github.com/embergabor/simplex-core), the
+library Simplex uses too. PlexVerse uses the version named in `app/build.gradle.kts`, fetched from
+[simplex-maven](https://github.com/embergabor/simplex-maven). Two optional lines in `local.properties`
+change that:
+
+- `simplexCore.dir=../simplex-core` builds from a checkout of the core instead, to work on both at once.
+- `simplexMaven.dir=../simplex-maven` takes versions from a local checkout before they're pushed.
+
+PlexVerse's own additions to the shared look (Kids' colour, its icons) are in `ui/KidsLook.kt`.
 
 ## Server script: compatibility tracks for TrueHD
 
