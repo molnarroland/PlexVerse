@@ -17,6 +17,8 @@ screen (with a live plex.tv code and its QR) were run, on a phone emulator.
 
 - Duplicates: legacy-agent ids (`com.plexapp.agents.imdb://…`) now match current-agent copies, and the
   same title + year always merges. Check the titles that showed twice are one now.
+- TV home screen (Settings › TV home screen): Continue watching in the Mi TV's row with 16:9 backgrounds and
+  episode stills, picking one resumes as the current profile; the PlexVerse · New channel on an Android TV launcher.
 - Who's watching with more than 10 Plex Home users (the "Others" face), the lock badge, a wrong PIN.
 - First-run categories: Movies and Series only, then "Make other categories too?".
 

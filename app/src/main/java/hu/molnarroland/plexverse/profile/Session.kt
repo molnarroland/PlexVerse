@@ -87,6 +87,8 @@ object Session {
     }
 
     fun signOut(context: Context, plex: PlexClient) {
+        // Off the TV's home screen too; content provider calls, quick enough here.
+        hu.molnarroland.plexverse.tv.TvHome.clear(context)
         plex.signOut()
         ProfileStore(context).signOut()
         VerseStore.reset()

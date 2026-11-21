@@ -76,6 +76,7 @@ import com.embergabor.simplex.core.ui.ThemeMode
 import com.embergabor.simplex.core.ui.okKeys
 import hu.molnarroland.plexverse.data.SetupPrefs
 import hu.molnarroland.plexverse.data.VerseSetup
+import hu.molnarroland.plexverse.data.VerseStore
 import hu.molnarroland.plexverse.data.ViewPrefs
 import hu.molnarroland.plexverse.profile.ProfileStore
 import hu.molnarroland.plexverse.profile.Session
@@ -113,6 +114,7 @@ internal enum class Section(val title: String, val icon: ImageVector, val about:
     Details("Playback details", Icons.Info, "The format readout in the player's corner, with the controls: video, HDR, and how the audio reaches the receiver. The remote's Info button shows or hides it during a video. OK switches."),
     Tunneling("Tunneled playback", Icons.Play, "Video and sound kept in step by the TV's own hardware instead of by the app. Less work for the app and can tighten lip sync with the receiver, but some TVs handle it badly. From the next video on. OK switches."),
     Spoilers("Unwatched episodes", Icons.Eye, "Blurs the pictures of episodes you haven't started, on the show page and in search, so they don't give anything away. OK switches."),
+    TvHome("TV home screen", Icons.Tv, "What you're watching in the TV's own Continue watching row, and a PlexVerse channel with the newest titles (on Android TV's home; Google TV shows mostly the row). Picking one plays it as the current profile. OK switches."),
     Wake("Wake server", Icons.Disk, "Waking the server this TV connects to first when it's asleep, with Wake-on-LAN."),
     Storage("Storage", Icons.Folder, "Preview thumbnails, the search copy of your libraries and artwork, kept on the TV to load faster. OK clears them."),
     Account("Account", Icons.Account, "Signing out forgets the account and every profile on this TV."),
@@ -133,6 +135,7 @@ fun SettingsScreen(plex: PlexClient, nav: Nav, onSwitchProfile: () -> Unit) {
     val profiles = remember { ProfileStore(context) }
     var details by remember { mutableStateOf(playerPrefs.playbackDetails) }
     var blur by remember { mutableStateOf(view.blurUnwatched) }
+    var tvHome by remember { mutableStateOf(hu.molnarroland.plexverse.tv.TvHome.enabled(context)) }
     var tunneled by remember { mutableStateOf(playerPrefs.tunneled) }
     var startup by remember { mutableStateOf(profiles.startup) }
     var place by remember { mutableStateOf(themePrefs.place) }
@@ -166,6 +169,7 @@ fun SettingsScreen(plex: PlexClient, nav: Nav, onSwitchProfile: () -> Unit) {
         Section.Details -> if (details) "Shown" else "Hidden"
         Section.Tunneling -> if (tunneled) "On" else "Off"
         Section.Spoilers -> if (blur) "Pictures blurred" else "Pictures shown"
+        Section.TvHome -> if (tvHome) "On" else "Off"
         Section.Wake -> plex.home?.name?.ifEmpty { null } ?: "—"
         Section.Storage -> cacheSize?.let(ItemInfo::size) ?: "…"
         Section.Account -> "Signed in"
@@ -176,6 +180,13 @@ fun SettingsScreen(plex: PlexClient, nav: Nav, onSwitchProfile: () -> Unit) {
             Section.Details -> { details = !details; playerPrefs.playbackDetails = details }
             Section.Tunneling -> { tunneled = !tunneled; playerPrefs.tunneled = tunneled }
             Section.Spoilers -> { blur = !blur; view.blurUnwatched = blur }
+            Section.TvHome -> {
+                tvHome = !tvHome
+                hu.molnarroland.plexverse.tv.TvHome.setEnabled(context, tvHome)
+                // Off: cleared now. On: filled as soon as the lists next settle.
+                if (!tvHome) scope.launch { withContext(Dispatchers.IO) { hu.molnarroland.plexverse.tv.TvHome.clear(context) } }
+                else VerseStore.get(context, plex).refresh(force = true)
+            }
             Section.Storage -> scope.launch {
                 withContext(Dispatchers.IO) { Caches.clear(context) }
                 cleared++
@@ -320,7 +331,7 @@ internal fun SettingsLayout(shown: Section, content: @Composable ColumnScope.() 
 internal fun SettingsPreview() = PreviewTheme {
     val values = mapOf(
         Section.Profiles to "Roland", Section.Servers to "7 libraries in use", Section.Appearance to "Auto · Budapest, HU",
-        Section.Details to "Hidden", Section.Tunneling to "Off", Section.Spoilers to "Pictures blurred", Section.Wake to "NAS",
+        Section.Details to "Hidden", Section.Tunneling to "Off", Section.Spoilers to "Pictures blurred", Section.TvHome to "On", Section.Wake to "NAS",
         Section.Storage to "412 MB", Section.Account to "Signed in",
     )
     SettingsLayout(Section.Profiles) {

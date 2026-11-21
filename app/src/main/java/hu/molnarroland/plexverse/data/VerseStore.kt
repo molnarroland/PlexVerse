@@ -217,6 +217,12 @@ class VerseStore private constructor(context: Context, private val plex: PlexCli
     fun recentlyAdded(category: String, lists: Map<String, List<Item>>, count: Int = 20): List<VerseEntry> =
         GridSort.ADDED.apply(entries(category, lists)).take(count)
 
+    /** The newest movies and series together for the TV's home screen; a Kids profile's own, within its ceiling. */
+    fun newestForHome(lists: Map<String, List<Item>>, ratings: Map<String, String>, count: Int = 15): List<VerseEntry> {
+        val all = if (kids != null) kidsEntries(lists, ratings) else entries(VerseSetup.MOVIES, lists) + entries(VerseSetup.SERIES, lists)
+        return GridSort.ADDED.apply(all).take(count)
+    }
+
     /**
      * Continue watching across servers: items from libraries in use (a Kids profile's own, within its
      * ceiling), newest first.

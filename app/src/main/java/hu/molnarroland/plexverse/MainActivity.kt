@@ -88,6 +88,9 @@ import hu.molnarroland.plexverse.ui.VoiceSearch
 import hu.molnarroland.plexverse.ui.splashDone
 import hu.molnarroland.plexverse.ui.theme.FollowTheme
 import hu.molnarroland.plexverse.ui.theme.applyTheme
+import hu.molnarroland.plexverse.tv.HomeLink
+import hu.molnarroland.plexverse.tv.TvHome
+import hu.molnarroland.plexverse.data.VerseSetup
 import kotlin.coroutines.resume
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
@@ -100,6 +103,9 @@ private enum class Phase { SignIn, Picker, Main, Kids }
 class MainActivity : ComponentActivity() {
 
     private val refresh = mutableIntStateOf(0)
+
+    /** A card on the TV's home screen was picked: what to play or open once the app is ready. */
+    private var link by mutableStateOf<HomeLink?>(null)
 
     /** The screen as it was, over the next one until that has its content; [coverFade] fades it away. */
     private var cover by mutableStateOf<ImageBitmap?>(null)
@@ -125,6 +131,7 @@ class MainActivity : ComponentActivity() {
         // The system splash (Android 12+) shows the still mark; the app's own animated one takes over.
         installSplashScreen()
         super.onCreate(savedInstanceState)
+        if (savedInstanceState == null) link = HomeLink.parse(intent?.data)
         val plex = PlexClient.get(this)
         applyTheme(this)
         // The window shows before Compose draws: same ground, so the start doesn't flash.
@@ -175,6 +182,12 @@ class MainActivity : ComponentActivity() {
             .putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
             .putExtra(RecognizerIntent.EXTRA_PROMPT, "Search")
         return runCatching { voice.launch(intent) }.isSuccess
+    }
+
+    // A home screen card while the app is already open (single task: the player, if open, is closed).
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        HomeLink.parse(intent.data)?.let { link = it }
     }
 
     // The mic arrives as the search key on most remotes; Android asks for a search with it.
@@ -232,7 +245,8 @@ class MainActivity : ComponentActivity() {
         val profiles = ProfileStore(this)
         if (!plex.isSignedIn || profiles.ownerToken == null) return Phase.SignIn
         val current = profiles.currentProfile
-        if (current == null || (profiles.startup == Startup.ASK && profiles.all.size > 1)) return Phase.Picker
+        // A home screen card is the current profile's (its Continue watching): no asking who's watching.
+        if (current == null || (link == null && profiles.startup == Startup.ASK && profiles.all.size > 1)) return Phase.Picker
         return if (profiles.isKids(current)) Phase.Kids else Phase.Main
     }
 
@@ -261,6 +275,10 @@ class MainActivity : ComponentActivity() {
         }
 
         val profiles = remember(phase) { ProfileStore(this) }
+        // A card picked while Who's watching is up: it's the current profile's, so go on as them.
+        LaunchedEffect(link, phase) {
+            if (link != null && phase == Phase.Picker && ProfileStore(this@MainActivity).currentProfile != null) phase = afterPick()
+        }
         SideEffect {
             longBack = when (phase) {
                 Phase.Kids -> ({ gate = true })
@@ -331,6 +349,26 @@ class MainActivity : ComponentActivity() {
         }
         val nav = remember(kids) { if (kids) base.forKids(profile?.let { profiles.kidsSettings(it.id).episodeLimit } ?: 3) else base }
 
+        // The TV's home screen follows this profile's Continue watching and newest titles.
+        val store = remember { VerseStore.get(this@MainActivity, plex) }
+        LaunchedEffect(Unit) { TvHome.follow(this@MainActivity, store) }
+        // A home screen card: play it, or open its show, once the splash is gone.
+        LaunchedEffect(link) {
+            val l = link ?: return@LaunchedEffect
+            snapshotFlow { splashDone }.first { it }
+            when (l) {
+                is HomeLink.Play -> nav.play(listOf(l.queue), resume = l.resume)
+                is HomeLink.Show -> {
+                    // The lists may still be loading on a cold start.
+                    val entry = withTimeoutOrNull(8000) {
+                        store.lists.first { lists -> findShow(store, lists, l.ref) != null }.let { findShow(store, it, l.ref) }
+                    }
+                    if (entry != null) nav.push(Screen.Show(entry.item, entry.sources))
+                }
+            }
+            link = null
+        }
+
         BackHandler(enabled = stack.size > 1) {
             states.removeState(stateKey(stack.size - 1, stack.last()))
             stack.removeAt(stack.lastIndex)
@@ -373,6 +411,10 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+
+    private fun findShow(store: VerseStore, lists: Map<String, List<com.embergabor.simplex.core.plex.Item>>, ref: String) =
+        (store.kids?.let { store.kidsEntries(lists, store.ratings.value) } ?: (store.entries(VerseSetup.SERIES, lists) + store.setup.others.flatMap { store.entries(it.id, lists) }))
+            .find { e -> e.sources.any { it.ref == ref } }
 
     /** The window as it looks now, or null if Android can't copy it. */
     private suspend fun snapshot(): Bitmap? {

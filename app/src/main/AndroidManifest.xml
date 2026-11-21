@@ -22,11 +22,19 @@
             android:name=".MainActivity"
             android:exported="true"
             android:theme="@style/Theme.PlexVerse.Starting"
-            android:screenOrientation="landscape">
+            android:screenOrientation="landscape"
+            android:launchMode="singleTask">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
                 <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
+            </intent-filter>
+            <!-- Cards on the TV's home screen (Continue watching, the PlexVerse channel): plexverse://play, show, open. -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="plexverse" />
             </intent-filter>
         </activity>
 

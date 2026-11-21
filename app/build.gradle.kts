@@ -85,6 +85,8 @@ dependencies {
     implementation("com.embergabor:simplex-core:0.1.2")
     // The system splash on Android 12+, handing over to the app's own animated one.
     implementation("androidx.core:core-splashscreen:1.0.1")
+    // The TV's home screen: Continue watching (Watch Next) and the PlexVerse channel.
+    implementation("androidx.tvprovider:tvprovider:1.0.0")
     // The QR code on the sign-in screen.
     implementation("com.google.zxing:core:3.5.3")
     // @Preview for every screen (see ui/preview), with the Compose version simplex-core brings.
