@@ -17,6 +17,9 @@ screen (with a live plex.tv code and its QR) were run, on a phone emulator.
 
 - Duplicates: legacy-agent ids (`com.plexapp.agents.imdb://…`) now match current-agent copies, and the
   same title + year always merges. Check the titles that showed twice are one now.
+- Collections (Settings › Collections: Off / Grouped / Collapsed) read the `Collection` tags of the
+  library lists (`/all?includeGuids=1`). Check Plex sends them there; if not, they need
+  `/library/sections/X/collections` and each one's children.
 - Who's watching with more than 10 Plex Home users (the "Others" face), the lock badge, a wrong PIN.
 - First-run categories: Movies and Series only, then "Make other categories too?".
 

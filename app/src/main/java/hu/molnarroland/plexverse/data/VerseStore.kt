@@ -66,6 +66,14 @@ class VerseStore private constructor(context: Context, private val plex: PlexCli
     /** Content ratings by "machineId|ratingKey" (simplex-core's items don't carry them). */
     val ratings: StateFlow<Map<String, String>> = _ratings
 
+    private val _collections = MutableStateFlow<Map<String, List<String>>>(emptyMap())
+    /** The Plex collections each title is in, by "machineId|ratingKey" (from the lists' Collection tags). */
+    val collections: StateFlow<Map<String, List<String>>> = _collections
+
+    /** The collections of any copy of [entry]. */
+    fun collectionsOf(entry: VerseEntry, collections: Map<String, List<String>>): List<String> =
+        entry.sources.flatMap { collections[it.ref].orEmpty() }
+
     private val _continuing = MutableStateFlow<Map<String, List<Item>>>(emptyMap())
     /** Each server's Continue watching items, by machine id. */
     val continuing: StateFlow<Map<String, List<Item>>> = _continuing
@@ -165,21 +173,25 @@ class VerseStore private constructor(context: Context, private val plex: PlexCli
         return ServerState.Done(count)
     }
 
-    /** Parses raw lists into [lists] and [ratings]; returns how many titles they hold. */
+    /** Parses raw lists into [lists], [ratings] and [collections]; returns how many titles they hold. */
     private fun publish(raw: List<Pair<String, String>>): Int {
         val parsed = raw.associate { (k, json) -> k to PlexClient.parseItems(json) }
         val ratings = HashMap<String, String>()
+        val collections = HashMap<String, List<String>>()
         for ((k, json) in raw) {
             val id = k.substringBefore('/')
             val meta = runCatching { JSONObject(json).optJSONObject("MediaContainer")?.optJSONArray("Metadata") }.getOrNull() ?: continue
             for (i in 0 until meta.length()) {
                 val o = meta.optJSONObject(i) ?: continue
-                val rating = o.optString("contentRating").ifEmpty { continue }
-                ratings["$id|${o.optString("ratingKey")}"] = rating
+                val ref = "$id|${o.optString("ratingKey")}"
+                o.optString("contentRating").ifEmpty { null }?.let { ratings[ref] = it }
+                val tags = o.optJSONArray("Collection")
+                if (tags != null) collections[ref] = (0 until tags.length()).mapNotNull { j -> tags.optJSONObject(j)?.optString("tag")?.ifEmpty { null } }
             }
         }
         _lists.update { it + parsed }
         _ratings.update { it + ratings }
+        _collections.update { it + collections }
         return parsed.values.sumOf { it.size }
     }
 
