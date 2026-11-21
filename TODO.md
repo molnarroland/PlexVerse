@@ -16,6 +16,7 @@ screen (with a live plex.tv code and its QR) were run, on a phone emulator.
 ## Built 2026-11-21, to check on the TV
 
 - Who's watching with more than 10 Plex Home users (the "Others" face), the lock badge, a wrong PIN.
+- First-run categories: Movies and Series only, then "Make other categories too?".
 
 ## Not built: needs simplex-core
 

@@ -21,6 +21,7 @@ import hu.molnarroland.plexverse.feature.search.SearchResultsPreview
 import hu.molnarroland.plexverse.feature.settings.SettingsAppearancePreview
 import hu.molnarroland.plexverse.feature.settings.SettingsPreview
 import hu.molnarroland.plexverse.feature.setup.ManageCategoriesPreview
+import hu.molnarroland.plexverse.feature.setup.SetupCategoriesFirstRunPreview
 import hu.molnarroland.plexverse.feature.setup.SetupCategoriesPreview
 import hu.molnarroland.plexverse.feature.setup.SetupServersPreview
 import hu.molnarroland.plexverse.feature.show.ShowPreview
@@ -151,6 +152,11 @@ fun SettingsScreenshot() = SettingsPreview()
 @TvPreviews
 @Composable
 fun SetupCategoriesScreenshot() = SetupCategoriesPreview()
+
+@PreviewTest
+@TvPreviews
+@Composable
+fun SetupCategoriesFirstRunScreenshot() = SetupCategoriesFirstRunPreview()
 
 @PreviewTest
 @TvPreviews

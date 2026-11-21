@@ -75,7 +75,8 @@ private sealed interface Reach {
 /**
  * Servers & categories, in two steps. 1: the servers, ranked for you (owned before shared, local before
  * remote, faster first), with Move as an override. 2: every library in Movies, Series, one of your
- * Others, or Hidden; OK on one moves it. "Looks right" on both keeps the first run to two presses.
+ * Others, or Hidden; OK on one moves it. The first time, step 2 shows only Movies and Series, then asks
+ * whether to make other categories. "Looks right" on both keeps the first run to three presses.
  * [onDone] is called after step 2.
  */
 @Composable
@@ -89,6 +90,7 @@ fun SetupScreen(plex: PlexClient, nav: Nav, onDone: () -> Unit) {
     var listError by remember { mutableStateOf<String?>(null) }
     val reach = remember { mutableStateMapOf<String, Reach>() }
     var step by remember { mutableStateOf(1) }
+    val firstRun = remember { !setup.confirmed }
     BackHandler(enabled = step == 2) { step = 1 }
 
     // The saved list first, then plex.tv's, which also brings servers shared since.
@@ -134,7 +136,7 @@ fun SetupScreen(plex: PlexClient, nav: Nav, onDone: () -> Unit) {
     if (step == 1) {
         ServersStep(ordered, reach, setup, speed::local, speed::latency, save, onNext = { step = 2 })
     } else {
-        CategoriesStep(setup, ordered.associate { it.machineId to it.name }, reach.mapValues { it.value is Reach.Done }, save, nav) {
+        CategoriesStep(setup, ordered.associate { it.machineId to it.name }, reach.mapValues { it.value is Reach.Done }, save, nav, simpleFirst = firstRun) {
             save(setup.copy(confirmed = true))
             VerseStore.reset()
             onDone()
@@ -242,10 +244,14 @@ private fun CategoriesStep(
     reachable: Map<String, Boolean>,
     save: (VerseSetup) -> Unit,
     nav: Nav,
+    simpleFirst: Boolean = false,
     onDone: () -> Unit,
 ) {
     val memory = rememberFocusMemory()
     var moving by remember { mutableStateOf<String?>(null) }
+    // The first time: just Movies and Series, then "other categories too?"
+    var simple by remember { mutableStateOf(simpleFirst) }
+    var askingOthers by remember { mutableStateOf(false) }
     // Libraries by server order, so the columns read the same way as step 1.
     val keys = setup.libraries.keys.sortedWith(compareBy({ names.keys.indexOf(it.substringBefore('/')).let { i -> if (i < 0) Int.MAX_VALUE else i } }, { setup.libraries[it]?.title }))
     fun libsIn(category: String) = keys.filter { setup.libraries[it]?.category == category }
@@ -253,7 +259,8 @@ private fun CategoriesStep(
     Column(Modifier.fillMaxSize().padding(horizontal = 48.dp, vertical = 36.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Steps(2)
         Text(
-            "${setup.moviesName} and ${setup.seriesName} fill themselves and make up Home. OK on a library moves it. New categories: Others › Manage categories.",
+            if (simple) "${setup.moviesName} and ${setup.seriesName} fill themselves and make up Home. OK on a library moves it."
+            else "${setup.moviesName} and ${setup.seriesName} fill themselves and make up Home. OK on a library moves it. New categories: Others › Manage categories.",
             fontSize = 12.sp, color = Palette.Secondary,
         )
         Row(Modifier.weight(1f), horizontalArrangement = Arrangement.spacedBy(14.dp)) {
@@ -279,24 +286,46 @@ private fun CategoriesStep(
             }
             bucket(setup.moviesName, "built in") { libsIn(VerseSetup.MOVIES).forEach { lib(it) } }
             bucket(setup.seriesName, "built in") { libsIn(VerseSetup.SERIES).forEach { lib(it) } }
-            bucket("Others", "yours") {
+            if (!simple) bucket("Others", "yours") {
                 if (setup.others.isEmpty()) Text("None yet", fontSize = 11.sp, color = Palette.Secondary)
                 setup.others.forEach { o ->
                     Text(o.name + if (o.id == setup.pinned) " ★" else "", fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = Palette.Secondary, modifier = Modifier.padding(top = 4.dp))
                     libsIn(o.id).forEach { lib(it) }
                 }
             }
-            bucket("Hidden", "not shown anywhere") { libsIn(VerseSetup.HIDDEN).forEach { lib(it) } }
+            if (!simple) bucket("Hidden", "not shown anywhere") { libsIn(VerseSetup.HIDDEN).forEach { lib(it) } }
+        }
+        if (simple) {
+            // Libraries already elsewhere (other videos go to a Videos category by themselves), so nothing seems lost.
+            val elsewhere = keys.count { setup.libraries[it]?.category.let { c -> c != VerseSetup.MOVIES && c != VerseSetup.SERIES } }
+            if (elsewhere > 0) Text(
+                "$elsewhere more ${if (elsewhere == 1) "library is" else "libraries are"} in other categories or hidden.",
+                fontSize = 11.sp, color = Palette.Secondary,
+            )
         }
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            PillButton("Looks right", onDone, Modifier.remembersFocus(memory, "done", default = keys.isEmpty()))
-            PillButton("Manage categories", { nav.push(Screen.ManageCategories) })
+            PillButton("Looks right", { if (simple) askingOthers = true else onDone() }, Modifier.remembersFocus(memory, "done", default = keys.isEmpty()))
+            if (!simple) PillButton("Manage categories", { nav.push(Screen.ManageCategories) })
         }
+    }
+    if (askingOthers) {
+        ChoiceDialog(
+            title = "Make other categories too?",
+            options = listOf("no" to "No, that's everything", "yes" to "Yes, like Documentaries or Anime"),
+            selected = null,
+            onPick = { answer ->
+                askingOthers = false
+                if (answer == "yes") simple = false else onDone()
+            },
+            onDismiss = { askingOthers = false },
+        )
     }
     moving?.let { key ->
         ChoiceDialog(
             title = "Move ${setup.libraries[key]?.title} to…",
-            options = setup.allCategories.map { it to setup.name(it) },
+            // Before other categories are asked about, a library goes to Movies, Series, or nowhere.
+            options = (if (simple) listOf(VerseSetup.MOVIES, VerseSetup.SERIES, VerseSetup.HIDDEN) else setup.allCategories)
+                .map { it to if (simple && it == VerseSetup.HIDDEN) "Don't show" else setup.name(it) },
             selected = setup.libraries[key]?.category,
             onPick = { save(setup.move(key, it)); moving = null },
             onDismiss = { moving = null },
@@ -326,5 +355,11 @@ internal fun SetupServersPreview() = PreviewTheme {
 @Composable
 internal fun SetupCategoriesPreview() = PreviewTheme {
     CategoriesStep(Sample.setup, Sample.serverNames, mapOf("dad" to false), {}, PreviewNav) {}
+}
+
+@TvPreviews
+@Composable
+internal fun SetupCategoriesFirstRunPreview() = PreviewTheme {
+    CategoriesStep(Sample.setup, Sample.serverNames, mapOf("dad" to false), {}, PreviewNav, simpleFirst = true) {}
 }
 
