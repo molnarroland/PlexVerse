@@ -76,13 +76,16 @@ Package: `hu.molnarroland.plexverse`.
 
 ## Install
 
-- **Download a release:** get the latest `plexverse-<version>-release.apk` from
-  [Releases](https://github.com/molnarroland/PlexVerse/releases/latest) and install it with
-  `adb connect <tv-ip>:5555` and `adb install -r plexverse-<version>-release.apk`. What changed is in
-  [CHANGELOG.md](CHANGELOG.md).
-- **Or use [Open Shelf](https://github.com/wingedpanther/openshelf):** an app store for Android TV that
-  installs open-source TV apps from their GitHub releases and keeps them updated, using only the remote.
-  To get it, open Downloader on the TV and enter `3399820` (Android 9+), then search for PlexVerse.
+Get the latest `plexverse-<version>-release.apk` from
+[Releases](https://github.com/molnarroland/PlexVerse/releases/latest), enable network debugging on the TV,
+and install it from a computer:
+
+```bash
+adb connect <tv-ip>:5555
+adb install -r plexverse-<version>-release.apk
+```
+
+What changed is in [CHANGELOG.md](CHANGELOG.md).
 
 ## Build and install from source
 
