@@ -2,6 +2,40 @@
 
 All notable changes to PlexVerse. Version names come from git tags (see `app/build.gradle.kts`).
 
+## [0.2.0] - 2026-11-21
+
+### Added
+
+- **The TV's home screen.** What you're watching shows in the TV's own Continue watching row (Watch Next,
+  as on Google TV), with a 16:9 background or episode still on each card; picking one resumes it in
+  PlexVerse as the current profile. On Android TV's home, a *PlexVerse · New* channel lists the newest
+  movies and series. Settings › *TV home screen* turns it off; signing out clears it.
+- **Big Plex Homes.** *Who's watching?* lays faces out in up to two rows, as many per row as fit; with
+  more profiles the last place is *Others*, listing the rest. The current profile always keeps its face.
+
+### Changed
+
+- **First-run categories** show only Movies and Series, then ask whether to make other categories too.
+  Settings › *Servers & categories* still shows everything.
+- A PIN is marked by a lock badge set into the face, long names stay on one line, and a face shows its
+  initial while its picture loads.
+- The website and README point to the latest GitHub release for installing.
+
+### Fixed
+
+- **Titles shown twice.** Libraries still on Plex's legacy agents carry ids like
+  `com.plexapp.agents.imdb://…`, which never matched copies on servers using the current agents. They're
+  matched now, and the same title and year always merge, even when servers disagree on ids.
+- A wrong PIN asks for it again straight away instead of going back to the faces.
+- A profile token Plex no longer accepts is replaced from plex.tv once, instead of the switch failing.
+- Faces with a PIN were cropped when zoomed on focus.
+
+### Known issues
+
+- The TV home screen updates only while PlexVerse runs: something watched elsewhere shows there once the
+  app is opened again. Its card pictures are the servers' URLs, which carry the profile's Plex token.
+- Still to check on a TV with a real account: see `TODO.md`.
+
 ## [0.1.0] - 2026-11-21
 
 The first PlexVerse release: an Android TV client that merges every Plex server your account reaches
@@ -55,4 +89,5 @@ built on simplex-core 0.1.2.
   progress: both need hooks in simplex-core.
 - Android 12+'s system splash is always the night one.
 
+[0.2.0]: https://github.com/molnarroland/PlexVerse/releases/tag/0.2.0
 [0.1.0]: https://github.com/molnarroland/PlexVerse/releases/tag/0.1.0
