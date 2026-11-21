@@ -94,15 +94,6 @@ object Sample {
         VerseEntry("m$i", item, sources)
     }
 
-    /** [movies] as grid cells, with two made-up Plex collections. */
-    fun collectionCells(view: hu.molnarroland.plexverse.data.CollectionView) = hu.molnarroland.plexverse.data.Collections.cells(movies, view) { e ->
-        when (e.item.title) {
-            "Alien", "Blade Runner", "Brazil" -> listOf("Ridley & friends")
-            "Spirited Away", "The Iron Giant", "Up", "Wall-E" -> listOf("Animation night")
-            else -> emptyList()
-        }
-    }
-
     val shows: List<VerseEntry> = listOf("Bluey", "Severance", "Slow Horses", "The Bear", "Top Gear", "Taskmaster").mapIndexed { i, title ->
         val item = item("s$i", title, type = "show", year = 2015 + i, leafCount = 20 + i * 4, viewedLeafCount = i * 3)
         VerseEntry("s$i", item, listOf(Source(if (i % 2 == 0) "nas" else "dad", item)))

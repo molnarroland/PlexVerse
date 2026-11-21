@@ -65,11 +65,7 @@ import com.embergabor.simplex.core.ui.IconTile
 import com.embergabor.simplex.core.ui.Icons
 import com.embergabor.simplex.core.ui.Palette
 import com.embergabor.simplex.core.ui.PillButton
-import hu.molnarroland.plexverse.data.CollectionView
-import hu.molnarroland.plexverse.data.Collections
-import hu.molnarroland.plexverse.data.GridCell
 import hu.molnarroland.plexverse.data.GridSort
-import hu.molnarroland.plexverse.data.ViewPrefs
 import hu.molnarroland.plexverse.data.ServerState
 import hu.molnarroland.plexverse.data.SortPrefs
 import hu.molnarroland.plexverse.data.VerseEntry
@@ -89,7 +85,6 @@ import kotlinx.coroutines.launch
  * One category's titles from every server, merged, with its sort (A–Z with a letter rail, Recently
  * added, Year, Unwatched first). An Other category's other-video libraries come first as folders.
  * ×N marks a title on N servers; the line at the bottom says which server the focused one plays from.
- * Titles of one Plex collection are framed together or folded into one tile, as set in Settings.
  */
 @Composable
 fun CategoryScreen(plex: PlexClient, category: String, profile: String, nav: Nav) {
@@ -104,16 +99,13 @@ fun CategoryScreen(plex: PlexClient, category: String, profile: String, nav: Nav
     var sort by remember { mutableStateOf(sortPrefs.sort(category)) }
     val merged = remember(lists) { store.entries(category, lists) }
     val entries = remember(merged, sort) { sort.apply(merged) }
-    val collections by store.collections.collectAsState()
-    val view = remember { ViewPrefs(context).collections }
-    val cells = remember(entries, collections) { Collections.cells(entries, view) { store.collectionsOf(it, collections) } }
     val folders = remember { store.folders(category) }
     val names = remember { plex.cachedServers.associate { it.machineId to it.name } }
     val order = remember(connected) { store.order(names.keys + connected.keys) }
     val memory = rememberFocusMemory()
     var menuFor by remember { mutableStateOf<VerseEntry?>(null) }
     CategoryContent(
-        setup.name(category), cells, view, folders, sort, { sort = it; sortPrefs.setSort(category, it) },
+        setup.name(category), entries, folders, sort, { sort = it; sortPrefs.setSort(category, it) },
         states, names, order, connected, nav, memory, onMenu = { menuFor = it },
     )
     menuFor?.let { entry -> EntryMenu(entry, connected, nav) { menuFor = null } }
@@ -121,14 +113,13 @@ fun CategoryScreen(plex: PlexClient, category: String, profile: String, nav: Nav
 
 /**
  * A category's grid as shown: [title] with the sort pills, [folders] (machineId, sectionKey, title) as
- * tiles, then [cells] as posters (collections as [view] says), an A–Z rail when sorted by title, and
- * which server the focused title plays from ([order] ranks the servers, [names] by machine id).
+ * tiles, then [entries] as posters, an A–Z rail when sorted by title, and which server the focused title
+ * plays from ([order] ranks the servers, [names] by machine id).
  */
 @Composable
 fun CategoryContent(
     title: String,
-    cells: List<GridCell>,
-    view: CollectionView,
+    entries: List<VerseEntry>,
     folders: List<Triple<String, String, String>>,
     sort: GridSort,
     onSort: (GridSort) -> Unit,
@@ -140,15 +131,14 @@ fun CategoryContent(
     memory: FocusMemory,
     onMenu: (VerseEntry) -> Unit,
 ) {
-    val letters = remember(cells, sort) { if (sort == GridSort.TITLE) GridSort.letters(cells.map { it.lead.item }) else emptyList() }
-    var drawer by remember { mutableStateOf<GridCell.Collection?>(null) }
+    val letters = remember(entries, sort) { if (sort == GridSort.TITLE) GridSort.letters(entries.map { it.item }) else emptyList() }
     var focused by remember { mutableStateOf<VerseEntry?>(null) }
     val grid = rememberLazyGridState()
     val scope = rememberCoroutineScope()
     var jumpTo by remember { mutableStateOf<String?>(null) }
     val headers = 1 + folders.size
-    PreloadImages(grid, cells, connected) { i ->
-        cells.getOrNull(i - headers)?.lead?.let { e -> e.sources.firstOrNull { it.machineId in connected }?.let { connected[it.machineId]?.image(it.item.thumb, 248, 372) } }
+    PreloadImages(grid, entries, connected) { i ->
+        entries.getOrNull(i - headers)?.let { e -> e.sources.firstOrNull { it.machineId in connected }?.let { connected[it.machineId]?.image(it.item.thumb, 248, 372) } }
     }
 
     Box(Modifier.fillMaxSize()) {
@@ -171,7 +161,7 @@ fun CategoryContent(
                         }
                     }
                     UpdatingBar(states, Modifier)
-                    if (cells.isEmpty() && folders.isEmpty() && states.values.none { it == ServerState.Waiting }) {
+                    if (entries.isEmpty() && folders.isEmpty() && states.values.none { it == ServerState.Waiting }) {
                         Text("Nothing here yet. Libraries are moved here in Settings › Servers & categories.", fontSize = 13.sp, color = Palette.Secondary)
                     }
                 }
@@ -185,41 +175,27 @@ fun CategoryContent(
                     onClick = { if (server != null) nav.push(Screen.Folder(Library(section, title, Library.Kind.OTHER), null, emptyList(), id)) },
                     horizontal = true,
                     modifier = Modifier.fillMaxWidth().height(72.dp).alpha(if (failed) 0.5f else 1f)
-                        .remembersFocus(memory, "f$id/$section", default = cells.isEmpty() && folders.first().first == id && folders.first().second == section),
+                        .remembersFocus(memory, "f$id/$section", default = entries.isEmpty() && folders.first().first == id && folders.first().second == section),
                 )
             }
-            items(
-                cells,
-                key = { it.key },
-                span = { c -> GridItemSpan(if (c is GridCell.Collection && view == CollectionView.GROUPED) minOf(c.members.size, maxLineSpan) else 1) },
-            ) { cell ->
+            items(entries, key = { it.key }) { entry ->
                 val jump = remember { FocusRequester() }
-                if (jumpTo == cell.key) {
+                if (jumpTo == entry.key) {
                     LaunchedEffect(Unit) {
                         withFrameNanos { }
                         runCatching { jump.requestFocus() }
                         jumpTo = null
                     }
                 }
-                val first = cell == cells.first()
-                when {
-                    cell is GridCell.Collection && view == CollectionView.GROUPED -> CollectionGroup(cell, connected, nav, onMenu, memory, first, jump) { focused = it }
-                    cell is GridCell.Collection -> CollectionTile(
-                        cell, connected, onOpen = { drawer = cell },
-                        modifier = Modifier.focusRequester(jump)
-                            .onFocusChanged { if (it.isFocused) focused = null }
-                            .remembersFocus(memory, cell.key, default = first),
-                    )
-                    else -> EntryPoster(cell.lead, connected, nav, kids = false, onMenu = onMenu,
-                        modifier = Modifier.focusRequester(jump)
-                            .onFocusChanged { if (it.isFocused) focused = cell.lead }
-                            .remembersFocus(memory, cell.key, default = first))
-                }
+                EntryPoster(entry, connected, nav, kids = false, onMenu = onMenu,
+                    modifier = Modifier.focusRequester(jump)
+                        .onFocusChanged { if (it.isFocused) focused = entry }
+                        .remembersFocus(memory, entry.key, default = entry == entries.first()))
             }
         }
         if (letters.isNotEmpty()) {
             LetterRail(letters, Modifier.align(Alignment.TopEnd).padding(top = 40.dp, end = 16.dp)) { first ->
-                jumpTo = cells[first].key
+                jumpTo = entries[first].key
                 scope.launch { grid.scrollToItem(first + headers) }
             }
         }
@@ -236,14 +212,13 @@ fun CategoryContent(
             }
         }
     }
-    drawer?.let { c -> CollectionDrawer(c, connected, nav, onMenu) { drawer = null } }
 }
 
 @TvPreviews
 @Composable
 internal fun CategoryPreview() = PreviewTheme {
     CategoryContent(
-        "Movies", Sample.movies.map { GridCell.Title(it) }, CollectionView.OFF, emptyList(), GridSort.TITLE, {}, Sample.servers, Sample.serverNames, listOf("nas", "office", "dad"),
+        "Movies", Sample.movies, emptyList(), GridSort.TITLE, {}, Sample.servers, Sample.serverNames, listOf("nas", "office", "dad"),
         emptyMap(), PreviewNav, rememberFocusMemory(), onMenu = {},
     )
 }
@@ -252,34 +227,9 @@ internal fun CategoryPreview() = PreviewTheme {
 @Composable
 internal fun OtherCategoryPreview() = PreviewTheme {
     CategoryContent(
-        "Documentaries", GridSort.ADDED.apply(Sample.movies.drop(6).take(8)).map { GridCell.Title(it) }, CollectionView.OFF, listOf(Triple("office", "9", "Training"), Triple("nas", "4", "Home videos")),
+        "Documentaries", GridSort.ADDED.apply(Sample.movies.drop(6).take(8)), listOf(Triple("office", "9", "Training"), Triple("nas", "4", "Home videos")),
         GridSort.ADDED, {}, emptyMap(), Sample.serverNames, listOf("nas", "office", "dad"), emptyMap(), PreviewNav, rememberFocusMemory(), onMenu = {},
     )
-}
-
-@TvPreviews
-@Composable
-internal fun CollectionsGroupedPreview() = PreviewTheme {
-    CategoryContent(
-        "Movies", Sample.collectionCells(CollectionView.GROUPED), CollectionView.GROUPED, emptyList(), GridSort.TITLE, {}, Sample.servers, Sample.serverNames,
-        listOf("nas", "office", "dad"), emptyMap(), PreviewNav, rememberFocusMemory(), onMenu = {},
-    )
-}
-
-@TvPreviews
-@Composable
-internal fun CollectionsCollapsedPreview() = PreviewTheme {
-    CategoryContent(
-        "Movies", Sample.collectionCells(CollectionView.COLLAPSED), CollectionView.COLLAPSED, emptyList(), GridSort.TITLE, {}, Sample.servers, Sample.serverNames,
-        listOf("nas", "office", "dad"), emptyMap(), PreviewNav, rememberFocusMemory(), onMenu = {},
-    )
-}
-
-@TvPreviews
-@Composable
-internal fun CollectionDrawerPreview() = PreviewTheme {
-    val c = Sample.collectionCells(CollectionView.COLLAPSED).filterIsInstance<GridCell.Collection>().first()
-    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.BottomCenter) { CollectionDrawerPanel(c, emptyMap(), PreviewNav, {}) }
 }
 
 private const val ALPHABET = "#ABCDEFGHIJKLMNOPQRSTUVWXYZ"

@@ -7,9 +7,6 @@ import com.android.tools.screenshot.PreviewTest
 import hu.molnarroland.plexverse.ui.preview.PartPreviews
 import hu.molnarroland.plexverse.ui.preview.TvPreviews
 import hu.molnarroland.plexverse.feature.category.CategoryPreview
-import hu.molnarroland.plexverse.feature.category.CollectionDrawerPreview
-import hu.molnarroland.plexverse.feature.category.CollectionsCollapsedPreview
-import hu.molnarroland.plexverse.feature.category.CollectionsGroupedPreview
 import hu.molnarroland.plexverse.feature.category.OtherCategoryPreview
 import hu.molnarroland.plexverse.feature.folder.FolderPreview
 import hu.molnarroland.plexverse.feature.home.HomePreview
@@ -196,18 +193,3 @@ fun SurpriseButtonScreenshot() = SurpriseButtonPreview()
 @PartPreviews
 @Composable
 fun TopMenuScreenshot() = TopMenuPreview()
-
-@PreviewTest
-@TvPreviews
-@Composable
-fun CollectionsGroupedScreenshot() = CollectionsGroupedPreview()
-
-@PreviewTest
-@TvPreviews
-@Composable
-fun CollectionsCollapsedScreenshot() = CollectionsCollapsedPreview()
-
-@PreviewTest
-@TvPreviews
-@Composable
-fun CollectionDrawerScreenshot() = CollectionDrawerPreview()

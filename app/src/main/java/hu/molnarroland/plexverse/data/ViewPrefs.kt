@@ -10,9 +10,4 @@ class ViewPrefs(context: Context) {
     var blurUnwatched: Boolean
         get() = prefs.getBoolean("blurUnwatched", false)
         set(value) { prefs.edit().putBoolean("blurUnwatched", value).apply() }
-
-    /** How titles of the same Plex collection show in the grids. */
-    var collections: CollectionView
-        get() = runCatching { CollectionView.valueOf(prefs.getString("collections", null) ?: "") }.getOrDefault(CollectionView.OFF)
-        set(value) { prefs.edit().putString("collections", value.name).apply() }
 }
