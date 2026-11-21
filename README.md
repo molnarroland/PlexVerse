@@ -8,7 +8,7 @@
   <b>All your Plex servers. One library, on the TV.</b><br>
   An Android TV client built on <a href="https://github.com/embergabor/simplex">Simplex</a> and embergabor's simplex-core.<br>
   <a href="https://molnarroland.github.io/PlexVerse/">Website and tour</a> ·
-  <a href="#build-and-install">Install</a> ·
+  <a href="#install">Install</a> ·
   <a href="#built-on-simplex">Built on Simplex</a>
 </p>
 
@@ -74,7 +74,17 @@ Package: `hu.molnarroland.plexverse`.
 - **Made for slow TVs:** the last screen stays until the next has its content, then crossfades; the sky
   is drawn once into a picture; focus lifts the card with a shadow. 60 fps on a TV's modest GPU and CPU.
 
-## Build and install
+## Install
+
+- **Download a release:** get the latest `plexverse-<version>-release.apk` from
+  [Releases](https://github.com/molnarroland/PlexVerse/releases/latest) and install it with
+  `adb connect <tv-ip>:5555` and `adb install -r plexverse-<version>-release.apk`. What changed is in
+  [CHANGELOG.md](CHANGELOG.md).
+- **Or use [Open Shelf](https://github.com/wingedpanther/openshelf):** an app store for Android TV that
+  installs open-source TV apps from their GitHub releases and keeps them updated, using only the remote.
+  To get it, open Downloader on the TV and enter `3399820` (Android 9+), then search for PlexVerse.
+
+## Build and install from source
 
 You need JDK 17+ and the Android SDK.
 

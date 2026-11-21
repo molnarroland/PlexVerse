@@ -157,7 +157,13 @@
   .layer.mine .tag { background: var(--mint); color: #032A22; }
 
   pre { background: rgba(7, 5, 12, .85); color: #EEE8FF; padding: 20px 22px; border-radius: var(--radius); overflow-x: auto; font-size: 14.5px; border: 1px solid var(--line); }
-  .steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 380px), 1fr)); gap: 20px; }
+  .steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr)); gap: 20px; }
+  .steps > div { display: flex; flex-direction: column; align-items: flex-start; gap: 12px; }
+  .steps > div > * { margin: 0; }
+  .steps > div > pre { align-self: stretch; }
+  .steps p { color: var(--muted); font-size: 15px; line-height: 1.55; }
+  .steps p a, .steps p b { color: var(--ink); }
+  .steps code { font-size: .92em; padding: 1px 6px; border-radius: 6px; background: var(--tile); border: 1px solid var(--line); color: var(--ink); }
   footer { padding: 70px 0 50px; color: var(--muted); font-size: 14px; text-align: center; }
   footer a { color: var(--ink); }
 
@@ -350,12 +356,27 @@
   <section class="block" id="install">
     <p class="eyebrow">Install</p>
     <h2 class="title">On any Android TV 8.0+</h2>
-    <p class="sub">Built for a Sony Bravia (Google TV) sending audio over eARC to an AV receiver. Enable network debugging on the TV, then:</p>
+    <p class="sub">Built for a Sony Bravia (Google TV) sending audio over eARC to an AV receiver, but it should run on any Android TV.</p>
     <div class="steps">
       <div>
-        <h3>From a release</h3>
+        <h3>Download a release</h3>
+        <p>Get the latest <code>plexverse-&lt;version&gt;-release.apk</code> from GitHub. Each release lists what changed.</p>
+        <a class="btn primary" href="https://github.com/molnarroland/PlexVerse/releases/latest">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>
+          Latest release
+        </a>
+        <p>Enable network debugging on the TV, then install it from a computer:</p>
 <pre>adb connect &lt;tv-ip&gt;:5555
-adb install -r plexverse-&lt;version&gt;.apk</pre>
+adb install -r plexverse-&lt;version&gt;-release.apk</pre>
+      </div>
+      <div>
+        <h3>Or use Open Shelf</h3>
+        <p><a href="https://github.com/wingedpanther/openshelf">Open Shelf</a> is an app store for Android TV that installs open-source TV apps from their GitHub releases, with only the remote. Search it for <b>PlexVerse</b> to install it, and updates show up in its My Apps tab.</p>
+        <p>To get Open Shelf, install <b>Downloader</b> from the Play Store, open it and enter the code <code>3399820</code>. Open Shelf needs Android 9 or newer.</p>
+        <a class="btn" href="https://github.com/wingedpanther/openshelf">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16v13H4zM4 7l2-3h12l2 3M9 11h6"/></svg>
+          Open Shelf on GitHub
+        </a>
       </div>
       <div>
         <h3>From source (JDK 17+, Android SDK)</h3>
