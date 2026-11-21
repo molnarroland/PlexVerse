@@ -18,6 +18,13 @@ val releaseKey = File(System.getProperty("user.home"), ".plexverse-release/keyst
 val commitCount = providers.exec { commandLine("git", "rev-list", "--count", "HEAD") }
     .standardOutput.asText.get().trim().toIntOrNull() ?: 1
 
+// The version name comes from the latest git tag: "0.1.0" on the tagged commit, "0.1.0-3-gabc1234"
+// three commits after it, with "-dirty" when there are uncommitted changes.
+val gitVersion = providers.exec {
+    commandLine("git", "describe", "--tags", "--dirty")
+    isIgnoreExitValue = true
+}.standardOutput.asText.get().trim().ifEmpty { "0.0.0" }
+
 android {
     namespace = "hu.molnarroland.plexverse"
     compileSdk = 37
@@ -27,7 +34,7 @@ android {
         minSdk = 26
         targetSdk = 37
         versionCode = commitCount
-        versionName = "0.2.$commitCount"
+        versionName = gitVersion
     }
 
     signingConfigs {

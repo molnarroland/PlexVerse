@@ -70,8 +70,8 @@ The TV's own apps reach the Marantz through the TV's audio system, not straight 
 - No VC-1 video decoder (only MediaTek's WMV one, which ExoPlayer doesn't use for VC-1).
 
 Updates:
-- Release key in `~/.plexverse-release` (back it up: without it no release can update the TV). Versions are
-  0.2.<commit count>. `tools/release.sh` builds, checks the signature and publishes a GitHub release.
+- Release key in `~/.plexverse-release` (back it up: without it no release can update the TV). Version names come
+  from the latest git tag (`git describe`), version codes are the commit count. `tools/release.sh` builds, checks the signature and publishes a GitHub release.
 - No in-app update check any more: releases are installed by hand (`adb install -r`).
 - Switching the TV to the release key needs one uninstall and reinstall (signing in again).
 
