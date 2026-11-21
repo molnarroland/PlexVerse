@@ -7,6 +7,9 @@ import hu.molnarroland.plexverse.ui.preview.Sample
 import hu.molnarroland.plexverse.ui.preview.PreviewTheme
 import hu.molnarroland.plexverse.ui.preview.TvPreviews
 import androidx.compose.foundation.background
+import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.foundation.layout.requiredSize
+import androidx.compose.animation.core.animateFloatAsState
 import kotlin.math.roundToInt
 import hu.molnarroland.plexverse.ui.theme.AppIcons
 import androidx.tv.material3.Icon
@@ -190,6 +193,8 @@ private val FaceSize = 120.dp
 private val BadgeSize = 28.dp
 /** The clear ring between the badge and the face. */
 private val BadgeGap = 4.dp
+/** Room around the face in the layer the hole is cut in, so the focus ring isn't clipped. */
+private val Margin = 8.dp
 
 /**
  * A round face with its [label] under it. With [locked], a lock badge sits on the bottom-right edge in a
@@ -198,15 +203,24 @@ private val BadgeGap = 4.dp
 @Composable
 private fun Face(label: String, labelColor: Color, modifier: Modifier, onClick: () -> Unit, locked: Boolean = false, content: @Composable () -> Unit) {
     Column(Modifier.width(Slot), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(10.dp)) {
-        Box(Modifier.size(FaceSize)) {
-            Surface(
-                onClick = onClick,
-                modifier = modifier.fillMaxSize().then(if (locked) Modifier.badgeHole() else Modifier),
-                shape = ClickableSurfaceDefaults.shape(CircleShape),
-                scale = ClickableSurfaceDefaults.scale(focusedScale = 1.1f),
-                border = ClickableSurfaceDefaults.border(focusedBorder = androidx.tv.material3.Border(androidx.compose.foundation.BorderStroke(4.dp, Palette.Ink))),
-                colors = ClickableSurfaceDefaults.colors(containerColor = Color.Transparent, focusedContainerColor = Color.Transparent),
-            ) { content() }
+        var focused by remember { mutableStateOf(false) }
+        val scale by animateFloatAsState(if (focused) 1.1f else 1f, label = "face")
+        // The face, its hole and its badge zoom together; the Surface's own zoom would grow the face out of
+        // the layer the hole is cut in (clipping it) and leave the hole and badge behind.
+        Box(Modifier.size(FaceSize).graphicsLayer { scaleX = scale; scaleY = scale }) {
+            Box(
+                Modifier.requiredSize(FaceSize + Margin * 2).then(if (locked) Modifier.badgeHole() else Modifier),
+                contentAlignment = Alignment.Center,
+            ) {
+                Surface(
+                    onClick = onClick,
+                    modifier = modifier.size(FaceSize).onFocusChanged { focused = it.isFocused },
+                    shape = ClickableSurfaceDefaults.shape(CircleShape),
+                    scale = ClickableSurfaceDefaults.scale(focusedScale = 1f),
+                    border = ClickableSurfaceDefaults.border(focusedBorder = androidx.tv.material3.Border(androidx.compose.foundation.BorderStroke(4.dp, Palette.Ink))),
+                    colors = ClickableSurfaceDefaults.colors(containerColor = Color.Transparent, focusedContainerColor = Color.Transparent),
+                ) { content() }
+            }
             if (locked) {
                 Box(
                     Modifier.size(BadgeSize).offset { (badgeCenter(FaceSize.toPx()) - BadgeSize.toPx() / 2).roundToInt().let { IntOffset(it, it) } }
@@ -242,7 +256,7 @@ private fun badgeCenter(size: Float) = size / 2 + size / 2 * 0.7071f
 private fun Modifier.badgeHole() = graphicsLayer { compositingStrategy = CompositingStrategy.Offscreen }
     .drawWithContent {
         drawContent()
-        val c = badgeCenter(size.width)
+        val c = Margin.toPx() + badgeCenter(FaceSize.toPx())
         drawCircle(Color.Black, radius = (BadgeSize / 2 + BadgeGap).toPx(), center = Offset(c, c), blendMode = BlendMode.Clear)
     }
 
