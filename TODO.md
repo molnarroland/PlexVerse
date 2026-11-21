@@ -15,6 +15,8 @@ screen (with a live plex.tv code and its QR) were run, on a phone emulator.
 
 ## Built 2026-11-21, to check on the TV
 
+- Duplicates: legacy-agent ids (`com.plexapp.agents.imdb://…`) now match current-agent copies, and the
+  same title + year always merges. Check the titles that showed twice are one now.
 - Who's watching with more than 10 Plex Home users (the "Others" face), the lock badge, a wrong PIN.
 - First-run categories: Movies and Series only, then "Make other categories too?".
 

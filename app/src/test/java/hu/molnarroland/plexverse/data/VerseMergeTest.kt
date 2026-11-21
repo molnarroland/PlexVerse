@@ -27,6 +27,37 @@ class VerseMergeTest {
         assertEquals(listOf("A", "B"), merged.first().sources.map { it.machineId })
     }
 
+    @Test fun legacyAgentMatchesCurrentAgent() {
+        // A library still on the legacy IMDb agent carries only its own id; the other is on Plex's current agent.
+        val merged = Verse.merge(
+            listOf(
+                Source("A", item("1", "Alien", 1979, listOf("plex://movie/5d776826", "imdb://tt0078748", "tmdb://348"))),
+                Source("B", item("7", "Alien", 1979, listOf("com.plexapp.agents.imdb://tt0078748?lang=en"))),
+                Source("C", item("3", "Alien", 1979, listOf("com.plexapp.agents.themoviedb://348?lang=hu"))),
+            ),
+            order = listOf("A", "B", "C"),
+        )
+        assertEquals(listOf("A", "B", "C"), merged.single().sources.map { it.machineId })
+        assertEquals("tvdb://81189", Verse.normalizeGuid("com.plexapp.agents.thetvdb://81189?lang=en"))
+        // An episode's legacy id is a path, not a title id: left alone.
+        assertEquals("com.plexapp.agents.thetvdb://81189/1/2?lang=en", Verse.normalizeGuid("com.plexapp.agents.thetvdb://81189/1/2?lang=en"))
+    }
+
+    @Test fun sameTitleAndYearMergeDespiteDifferentIds() {
+        val merged = Verse.merge(
+            listOf(
+                Source("A", item("1", "Dune", 2021, listOf("imdb://tt1160419"))),
+                // Matched to another id on this server.
+                Source("B", item("2", "Dune", 2021, listOf("tmdb://999999"))),
+                // The 1984 film stays apart, and a copy without a year only matches by id.
+                Source("B", item("3", "Dune", 1984, listOf("imdb://tt0087182"))),
+                Source("C", item("4", "Dune", null, listOf("tmdb://1"))),
+            ),
+            order = listOf("A", "B", "C"),
+        )
+        assertEquals(listOf(2, 1, 1), merged.map { it.sources.size }.sortedDescending())
+    }
+
     @Test fun localIdsNeverMatch() {
         val merged = Verse.merge(
             listOf(Source("A", item("1", "Holiday", 2020, listOf("local://1"))), Source("B", item("1", "Trip", 2021, listOf("local://1")))),

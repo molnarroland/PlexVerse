@@ -29,18 +29,36 @@ object Verse {
     // Ids that mean the same title on every server. Others (local://, the "none" agent) are per server.
     private val shared = Regex("^(plex|imdb|tmdb|tvdb)://")
 
+    // The legacy agents' ids ("com.plexapp.agents.imdb://tt0078748?lang=en"), for libraries not moved to
+    // Plex's current agents. They carry no other ids, so without this they never match a current copy.
+    private val legacy = Regex("^com\\.plexapp\\.agents\\.(imdb|themoviedb|thetvdb)://([^/?]+)(\\?.*)?$")
+    private val legacyScheme = mapOf("imdb" to "imdb", "themoviedb" to "tmdb", "thetvdb" to "tvdb")
+
+    /** A title's id as the current agents write it; legacy ids of a whole title are rewritten, the rest kept. */
+    fun normalizeGuid(guid: String): String =
+        legacy.matchEntire(guid)?.let { m -> "${legacyScheme.getValue(m.groupValues[1])}://${m.groupValues[2]}" } ?: guid
+
+    private fun sharedIds(item: Item) = item.guids.map(::normalizeGuid).filter { shared.containsMatchIn(it) }.distinct()
+
     private fun normalize(title: String) = SearchMatch.terms(title).joinToString(" ")
 
     /** A–Z order: the sort title (without "The"), ignoring case and accents. */
     fun sortKey(item: Item) = normalize(item.titleSort)
 
-    /** What a title is matched by: its shared ids, or without any, its title and year. */
-    fun matchKeys(item: Item): List<String> =
-        item.guids.filter { shared.containsMatchIn(it) }.ifEmpty { listOf("title:${normalize(item.title)}|${item.year ?: ""}") }
+    /**
+     * What a title is matched by: its shared ids, and its title with its year. The title also counts when
+     * ids are there, since two servers can disagree on them (one matched to another id, a wrong match).
+     * Without a year only ids match, unless there are none: a remake must not merge with the original.
+     */
+    fun matchKeys(item: Item): List<String> {
+        val ids = sharedIds(item)
+        val title = "title:${normalize(item.title)}|${item.year ?: ""}".takeIf { item.year != null || ids.isEmpty() }
+        return ids + listOfNotNull(title)
+    }
 
     /** An episode's: its shared ids, or without any, its season and number. */
     fun episodeKeys(item: Item): List<String> =
-        item.guids.filter { shared.containsMatchIn(it) }.ifEmpty { listOf("episode:${item.parentIndex ?: 0}|${item.index ?: 0}") }
+        sharedIds(item).ifEmpty { listOf("episode:${item.parentIndex ?: 0}|${item.index ?: 0}") }
 
     /** Groups [sources] that share any of their [keys] (a union-find over the keys), sorted A–Z. */
     fun merge(sources: List<Source>, order: List<String>, keys: (Item) -> List<String> = ::matchKeys): List<VerseEntry> {
