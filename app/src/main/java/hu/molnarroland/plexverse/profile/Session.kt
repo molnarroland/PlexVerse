@@ -47,17 +47,27 @@ object Session {
     suspend fun switchTo(context: Context, plex: PlexClient, profile: Profile, pin: String?) {
         val store = ProfileStore(context)
         val owner = requireNotNull(store.ownerToken) { "Not signed in" }
-        val token = when {
+        val cached = store.token(profile.id).takeIf { !profile.protected && !profile.admin && !profile.local && profile.id != Profile.ACCOUNT }
+        var token = when {
             profile.local || profile.id == Profile.ACCOUNT -> owner
             profile.admin && !profile.protected -> owner
-            !profile.protected && store.token(profile.id) != null -> store.token(profile.id)!!
+            cached != null -> cached
             else -> PlexHome.switchTo(plex, owner, profile, pin)
         }
         val previous = plex.accountToken
         if (token != previous || !plex.isSignedIn) {
             plex.signOut()
             try {
-                plex.connect(token)
+                try {
+                    plex.connect(token)
+                } catch (e: Exception) {
+                    if (e is kotlinx.coroutines.CancellationException || cached == null) throw e
+                    // The kept token may have been revoked (the user removed and added again, a password
+                    // change): ask plex.tv for a new one once before giving up.
+                    token = PlexHome.switchTo(plex, owner, profile, null)
+                    plex.signOut()
+                    plex.connect(token)
+                }
             } catch (e: Exception) {
                 previous?.let { runCatching { plex.connect(it) } }
                 throw e

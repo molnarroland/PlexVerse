@@ -8,6 +8,19 @@ import org.junit.Test
 
 class ProfilesTest {
 
+    @Test fun pickerOverflow() {
+        val all = (1..12).map { Profile("p$it", "P$it") }
+        val (few, none) = splitForPicker(all.take(10), null, 10)
+        assertEquals(10, few.size)
+        assertTrue(none.isEmpty())
+        val (shown, rest) = splitForPicker(all, "p2", 10)
+        assertEquals((1..9).map { "p$it" }, shown.map { it.id })
+        assertEquals(listOf("p10", "p11", "p12"), rest.map { it.id })
+        val (withMe, others) = splitForPicker(all, "p11", 10)
+        assertEquals((1..8).map { "p$it" } + "p11", withMe.map { it.id })
+        assertEquals(listOf("p9", "p10", "p12"), others.map { it.id })
+    }
+
     @Test fun plexHomeUsers() {
         val json = """{"id":1,"name":"Home","users":[
             {"id":1,"uuid":"aaa","title":"Roland","username":"roland","thumb":"https://plex.tv/users/aaa/avatar","admin":true,"restricted":false,"protected":true},

@@ -32,6 +32,19 @@ data class Profile(
     }
 }
 
+/**
+ * Splits [profiles] into the faces that fit the picker ([capacity] of them) and the rest, which go
+ * behind an "Others" face that takes the last place. [current] always stays among the faces.
+ */
+fun splitForPicker(profiles: List<Profile>, current: String?, capacity: Int): Pair<List<Profile>, List<Profile>> {
+    if (profiles.size <= capacity) return profiles to emptyList()
+    val room = (capacity - 1).coerceAtLeast(1)
+    var shown = profiles.take(room)
+    val me = profiles.find { it.id == current }
+    if (me != null && me !in shown) shown = shown.dropLast(1) + me
+    return shown to profiles.filter { it !in shown }
+}
+
 /** plex.tv's Plex Home: the account's users, and switching to one of them. */
 object PlexHome {
     private const val API = "https://plex.tv/api/v2"

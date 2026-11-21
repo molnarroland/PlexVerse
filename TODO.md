@@ -13,6 +13,10 @@ screen (with a live plex.tv code and its QR) were run, on a phone emulator.
   narrowing the posters.
 - Theme Auto from the IP address, a place set by hand, the switch waiting while a video plays.
 
+## Built 2026-11-21, to check on the TV
+
+- Who's watching with more than 10 Plex Home users (the "Others" face), the lock badge, a wrong PIN.
+
 ## Not built: needs simplex-core
 
 - **Lag prompt during playback** ("Lagging on NAS. Continue on Office, same Hungarian audio?"). The player

@@ -24,6 +24,7 @@ import hu.molnarroland.plexverse.feature.setup.ManageCategoriesPreview
 import hu.molnarroland.plexverse.feature.setup.SetupCategoriesPreview
 import hu.molnarroland.plexverse.feature.setup.SetupServersPreview
 import hu.molnarroland.plexverse.feature.show.ShowPreview
+import hu.molnarroland.plexverse.feature.start.ProfilePickerCrowdedPreview
 import hu.molnarroland.plexverse.feature.start.ProfilePickerPreview
 import hu.molnarroland.plexverse.feature.start.SignInFindingServersPreview
 import hu.molnarroland.plexverse.feature.start.SignInPreview
@@ -114,6 +115,11 @@ fun PrefetchScreenshot() = PrefetchPreview()
 @TvPreviews
 @Composable
 fun ProfilePickerScreenshot() = ProfilePickerPreview()
+
+@PreviewTest
+@TvPreviews
+@Composable
+fun ProfilePickerCrowdedScreenshot() = ProfilePickerCrowdedPreview()
 
 @PreviewTest
 @TvPreviews

@@ -24,6 +24,7 @@ object AppIcons {
     val Up = stroke("M12 19V5 M6 11l6-6 6 6")
     val Down = stroke("M12 5v14 M6 13l6 6 6-6")
     val Plus = stroke("M12 5v14 M5 12h14", width = 2f)
+    val Lock = stroke("M8 11V8a4 4 0 0 1 8 0v3 M6 11h12v9H6z", width = 2.2f)
 
     private fun stroke(d: String, width: Float = 1.6f) = ImageVector.Builder(
         defaultWidth = 24.dp, defaultHeight = 24.dp, viewportWidth = 24f, viewportHeight = 24f,
